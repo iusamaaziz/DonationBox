@@ -1,22 +1,23 @@
-using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.OpenApi.Models;
 
 using PaymentService.Data;
 using PaymentService.Services;
 
 using StackExchange.Redis;
 
-var builder = FunctionsApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
-builder.ConfigureFunctionsWebApplication();
+// Add services to the container.
+builder.Services.AddControllers()
+    .AddNewtonsoftJson();
 
 // Configure Entity Framework
-var connectionString = builder.Configuration.GetValue<string>("ConnectionStrings:DefaultConnection")
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? "Server=(localdb)\\mssqllocaldb;Database=PaymentServiceDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true";
 
 builder.Services.AddDbContext<PaymentDbContext>(options =>
@@ -28,16 +29,17 @@ if (useRedis)
 {
     try
     {
-        var redisConnectionString = builder.Configuration.GetValue<string>("ConnectionStrings:Redis") ?? "localhost:6379";
+        var redisConnectionString = builder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
         var multiplexer = ConnectionMultiplexer.Connect(redisConnectionString);
         builder.Services.AddSingleton<IConnectionMultiplexer>(multiplexer);
         builder.Services.AddSingleton<IDistributedLockService, RedisDistributedLockService>();
-        
-        Console.WriteLine($"Redis distributed locking enabled with connection: {redisConnectionString}");
+
+        builder.Logging.AddConsole();
+        builder.Services.AddLogging();
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"Failed to configure Redis: {ex.Message}. Using in-memory distributed locking.");
+        // Redis configuration failed, log will be handled by the logging framework when service starts
         builder.Services.AddSingleton<IDistributedLockService, InMemoryDistributedLockService>();
     }
 }
@@ -50,15 +52,45 @@ else
 builder.Services.AddScoped<IPaymentGatewayService, SimulatedPaymentGatewayService>();
 builder.Services.AddScoped<IOutboxService, OutboxService>();
 
+// Register PaymentSagaService as singleton and hosted service
+builder.Services.AddSingleton<PaymentSagaService>();
+builder.Services.AddSingleton<IPaymentSagaService>(sp => sp.GetRequiredService<PaymentSagaService>());
+builder.Services.AddHostedService(sp => sp.GetRequiredService<PaymentSagaService>());
+
+// Register OutboxProcessorBackgroundService
+builder.Services.AddHostedService<OutboxProcessorBackgroundService>();
+
 // Configure logging
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
 
-builder.Services
-    .AddApplicationInsightsTelemetryWorkerService()
-    .ConfigureFunctionsApplicationInsights();
+// Configure Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Payment Service API",
+        Version = "v1",
+        Description = "Payment processing service with saga orchestration"
+    });
+});
 
 var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Service API v1");
+    });
+}
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
 // Initialize database
 using (var scope = app.Services.CreateScope())

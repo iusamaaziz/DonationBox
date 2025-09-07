@@ -14,6 +14,9 @@ public class PaymentGatewayResponse
 {
     public bool IsSuccess { get; set; }
     public string GatewayTransactionId { get; set; } = string.Empty;
+    public string PaymentGateway { get; set; } = string.Empty;
+    public decimal Amount { get; set; }
+    public decimal GatewayFee { get; set; }
     public PaymentStatus Status { get; set; }
     public string? ErrorMessage { get; set; }
     public decimal ProcessingFee { get; set; }

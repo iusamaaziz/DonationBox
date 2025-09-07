@@ -1,9 +1,9 @@
+using System.Text.Json;
+
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+
 using PaymentService.Data;
 using PaymentService.Models;
-using System.Text.Json;
 
 namespace PaymentService.Services;
 
@@ -48,18 +48,8 @@ public class OutboxService : IOutboxService
 
         _logger.LogInformation("Added event {EventId} of type {EventType} to outbox", eventId, eventType);
 
-        // Immediately try to process the event
-        _ = Task.Run(async () =>
-        {
-            try
-            {
-                await ProcessEventAsync(outboxEvent);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to immediately process event {EventId}", eventId);
-            }
-        });
+        // Event will be processed by the background service (PaymentSagaService or separate outbox processor)
+        // This avoids DbContext disposal issues with immediate processing
     }
 
     public async Task<IEnumerable<OutboxEvent>> GetPendingEventsAsync(int batchSize = 50)
@@ -116,64 +106,14 @@ public class OutboxService : IOutboxService
 
     public async Task RetryFailedEventsAsync()
     {
-        var failedEvents = await GetPendingEventsAsync();
-        
-        foreach (var eventItem in failedEvents)
-        {
-            try
-            {
-                await ProcessEventAsync(eventItem);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to retry event {EventId}", eventItem.EventId);
-            }
-        }
+        // Events are now processed by the background service (OutboxProcessorBackgroundService)
+        // This method is kept for backward compatibility but doesn't do immediate processing
+        // to avoid DbContext disposal issues
+
+        var pendingEvents = await GetPendingEventsAsync();
+        _logger.LogInformation("Found {Count} pending outbox events for background processing", pendingEvents.Count());
     }
 
-    private async Task ProcessEventAsync(OutboxEvent outboxEvent)
-    {
-        try
-        {
-            _logger.LogInformation("Processing outbox event {EventId} of type {EventType}", 
-                outboxEvent.EventId, outboxEvent.EventType);
-
-            // Update status to processing
-            outboxEvent.Status = OutboxEventStatus.Processing;
-            outboxEvent.UpdatedAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
-
-            // In a real implementation, this would:
-            // 1. Send to message broker (Azure Service Bus, RabbitMQ, etc.)
-            // 2. Call external APIs
-            // 3. Trigger other services
-            
-            // For simulation, we'll just log and mark as completed
-            await SimulateEventProcessingAsync(outboxEvent);
-
-            await MarkEventAsProcessedAsync(outboxEvent.Id);
-        }
-        catch (Exception ex)
-        {
-            await MarkEventAsFailedAsync(outboxEvent.Id, ex.Message);
-            throw;
-        }
-    }
-
-    private async Task SimulateEventProcessingAsync(OutboxEvent outboxEvent)
-    {
-        // Simulate processing time
-        await Task.Delay(Random.Shared.Next(100, 500));
-
-        // Simulate occasional failures (5% failure rate)
-        if (Random.Shared.NextDouble() < 0.05)
-        {
-            throw new InvalidOperationException("Simulated event processing failure");
-        }
-
-        _logger.LogInformation("Successfully processed event {EventId} of type {EventType}: {EventData}", 
-            outboxEvent.EventId, outboxEvent.EventType, outboxEvent.EventData);
-    }
 
     private DateTime CalculateNextRetryTime(int retryCount)
     {

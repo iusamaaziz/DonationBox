@@ -1,11 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Attributes;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Enums;
 using Microsoft.DurableTask.Client;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
 using PaymentService.Data;
 using PaymentService.DTOs;
 using PaymentService.Models;
@@ -27,12 +24,6 @@ public class PaymentFunctions
     }
 
     [Function("ProcessPayment")]
-    [OpenApiOperation(operationId: "ProcessPayment", tags: new[] { "Payments" }, Summary = "Process a donation payment", Description = "Initiates a payment saga orchestration to process a donation payment with distributed locking and reliable transaction handling.")]
-    [OpenApiSecurity("ApiKey", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-api-key")]
-    [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(ProcessPaymentRequest), Required = true, Description = "Payment processing request containing donation details and payment information")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Accepted, contentType: "application/json", bodyType: typeof(object), Summary = "Payment processing initiated", Description = "Returns orchestration details for tracking payment progress")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(object), Summary = "Invalid request", Description = "Request validation failed")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.InternalServerError, contentType: "application/json", bodyType: typeof(object), Summary = "Processing error", Description = "An error occurred during payment processing")]
     public async Task<HttpResponseData> ProcessPayment(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "payments/process")] HttpRequestData req,
         [DurableClient] DurableTaskClient client)
@@ -93,12 +84,6 @@ public class PaymentFunctions
     }
 
     [Function("GetPaymentStatus")]
-    [OpenApiOperation(operationId: "GetPaymentStatus", tags: new[] { "Payments" }, Summary = "Get payment orchestration status", Description = "Retrieves the current status of a payment saga orchestration using the orchestration instance ID.")]
-    [OpenApiSecurity("ApiKey", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-api-key")]
-    [OpenApiParameter(name: "instanceId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Summary = "Orchestration instance ID", Description = "The unique identifier of the payment saga orchestration instance")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object), Summary = "Orchestration status", Description = "Returns the current status and details of the payment orchestration")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(object), Summary = "Orchestration not found", Description = "The specified orchestration instance was not found")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.InternalServerError, contentType: "application/json", bodyType: typeof(object), Summary = "Status retrieval error", Description = "An error occurred while retrieving the orchestration status")]
     public async Task<HttpResponseData> GetPaymentStatus(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "payments/status/{instanceId}")] HttpRequestData req,
         [DurableClient] DurableTaskClient client,
@@ -134,12 +119,6 @@ public class PaymentFunctions
     }
 
     [Function("GetPaymentByTransactionId")]
-    [OpenApiOperation(operationId: "GetPaymentByTransactionId", tags: new[] { "Payments" }, Summary = "Get payment by transaction ID", Description = "Retrieves detailed payment information including ledger entries for a specific transaction ID.")]
-    [OpenApiSecurity("ApiKey", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-api-key")]
-    [OpenApiParameter(name: "transactionId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Summary = "Transaction ID", Description = "The unique identifier of the payment transaction")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(PaymentStatusResponse), Summary = "Payment details", Description = "Returns detailed payment information with ledger entries")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(object), Summary = "Payment not found", Description = "The specified payment transaction was not found")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.InternalServerError, contentType: "application/json", bodyType: typeof(object), Summary = "Retrieval error", Description = "An error occurred while retrieving the payment")]
     public async Task<HttpResponseData> GetPaymentByTransactionId(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "payments/{transactionId}")] HttpRequestData req,
         string transactionId)
@@ -185,14 +164,6 @@ public class PaymentFunctions
     }
 
     [Function("RefundPayment")]
-    [OpenApiOperation(operationId: "RefundPayment", tags: new[] { "Payments" }, Summary = "Initiate payment refund", Description = "Initiates a refund process for a completed payment transaction. Supports full or partial refunds.")]
-    [OpenApiSecurity("ApiKey", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-api-key")]
-    [OpenApiParameter(name: "transactionId", In = ParameterLocation.Path, Required = true, Type = typeof(string), Summary = "Transaction ID", Description = "The unique identifier of the payment transaction to refund")]
-    [OpenApiRequestBody(contentType: "application/json", bodyType: typeof(RefundRequest), Required = true, Description = "Refund request details including amount and reason")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.Accepted, contentType: "application/json", bodyType: typeof(RefundResponse), Summary = "Refund initiated", Description = "Returns refund details and tracking information")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "application/json", bodyType: typeof(object), Summary = "Invalid refund request", Description = "Request validation failed or payment cannot be refunded")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.NotFound, contentType: "application/json", bodyType: typeof(object), Summary = "Payment not found", Description = "The specified payment transaction was not found")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.InternalServerError, contentType: "application/json", bodyType: typeof(object), Summary = "Refund processing error", Description = "An error occurred while processing the refund")]
     public async Task<HttpResponseData> RefundPayment(
         [HttpTrigger(AuthorizationLevel.Function, "post", Route = "payments/{transactionId}/refund")] HttpRequestData req,
         string transactionId)
@@ -260,11 +231,6 @@ public class PaymentFunctions
     }
 
     [Function("GetPaymentsByDonation")]
-    [OpenApiOperation(operationId: "GetPaymentsByDonation", tags: new[] { "Payments" }, Summary = "Get payments by donation ID", Description = "Retrieves all payment transactions associated with a specific donation, ordered by creation date (newest first).")]
-    [OpenApiSecurity("ApiKey", SecuritySchemeType.ApiKey, In = OpenApiSecurityLocationType.Header, Name = "x-api-key")]
-    [OpenApiParameter(name: "donationId", In = ParameterLocation.Path, Required = true, Type = typeof(int), Summary = "Donation ID", Description = "The unique identifier of the donation")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(PaymentResponse[]), Summary = "Payment list", Description = "Returns a list of all payments for the specified donation")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.InternalServerError, contentType: "application/json", bodyType: typeof(object), Summary = "Retrieval error", Description = "An error occurred while retrieving payments")]
     public async Task<HttpResponseData> GetPaymentsByDonation(
         [HttpTrigger(AuthorizationLevel.Function, "get", Route = "payments/donation/{donationId}")] HttpRequestData req,
         int donationId)
@@ -303,8 +269,6 @@ public class PaymentFunctions
     }
 
     [Function("GetServiceInfo")]
-    [OpenApiOperation(operationId: "GetServiceInfo", tags: new[] { "Health" }, Summary = "Get service information", Description = "Retrieves general information about the Payment Service including version, features, and capabilities.")]
-    [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "application/json", bodyType: typeof(object), Summary = "Service information", Description = "Returns service metadata, version, and feature list")]
     public async Task<HttpResponseData> GetServiceInfo(
         [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "info")] HttpRequestData req)
     {

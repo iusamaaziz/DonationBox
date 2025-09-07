@@ -1,15 +1,14 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Builder;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Abstractions;
-using Microsoft.Azure.WebJobs.Extensions.OpenApi.Core.Configurations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using PaymentService.Configuration;
+
 using PaymentService.Data;
 using PaymentService.Services;
+
 using StackExchange.Redis;
 
 var builder = FunctionsApplication.CreateBuilder(args);
@@ -51,9 +50,6 @@ else
 builder.Services.AddScoped<IPaymentGatewayService, SimulatedPaymentGatewayService>();
 builder.Services.AddScoped<IOutboxService, OutboxService>();
 
-// Configure Swagger/OpenAPI
-builder.Services.AddSingleton<IOpenApiConfigurationOptions, SwaggerConfiguration>();
-
 // Configure logging
 builder.Logging.AddConsole();
 builder.Logging.SetMinimumLevel(LogLevel.Information);
@@ -61,15 +57,6 @@ builder.Logging.SetMinimumLevel(LogLevel.Information);
 builder.Services
     .AddApplicationInsightsTelemetryWorkerService()
     .ConfigureFunctionsApplicationInsights();
-
-builder.Services
-    .AddSwaggerGen(c =>
-    {
-        c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo
-        {
-            Title = "Payment Service"
-        });
-    });
 
 var app = builder.Build();
 

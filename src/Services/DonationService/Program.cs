@@ -59,6 +59,9 @@ builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<IDonationService, DonationServiceImpl>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 
+// Register authentication services (gRPC)
+builder.Services.AddScoped<IAuthValidationService, GrpcAuthValidationService>();
+
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

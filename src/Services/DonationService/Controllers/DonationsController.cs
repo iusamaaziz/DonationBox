@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DonationService.DTOs;
 using DonationService.Models;
 using DonationService.Services;
+using DonationService.Attributes;
+using DonationService.Extensions;
 
 namespace DonationService.Controllers;
 
@@ -25,6 +27,7 @@ public class DonationsController : ControllerBase
     /// <param name="request">Donation creation request</param>
     /// <returns>Created donation</returns>
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<DonationResponse>> CreateDonation([FromBody] CreateDonationRequest request)
     {
         try

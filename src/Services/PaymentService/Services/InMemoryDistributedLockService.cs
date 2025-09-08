@@ -17,7 +17,7 @@ public class InMemoryDistributedLockService : IDistributedLockService
     {
         var lockKey = $"lock:{key}";
         var lockValue = Guid.NewGuid().ToString();
-        var maxWaitTime = waitTime ?? TimeSpan.FromSeconds(5);
+        var maxWaitTime = waitTime ?? TimeSpan.FromSeconds(1);
         var startTime = DateTime.UtcNow;
 
         _logger.LogDebug("Attempting to acquire in-memory lock for key {LockKey} with expiration {Expiration}", 

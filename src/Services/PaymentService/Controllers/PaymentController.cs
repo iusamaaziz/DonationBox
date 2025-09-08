@@ -77,29 +77,45 @@ public class PaymentController : ControllerBase
     }
 
     [HttpGet("status/{instanceId}")]
-    [ProducesResponseType(typeof(object), (int)HttpStatusCode.OK)]
+    [ProducesResponseType(typeof(PaymentStatusResponse), (int)HttpStatusCode.OK)]
     [ProducesResponseType(typeof(object), (int)HttpStatusCode.NotFound)]
-    public IActionResult GetPaymentStatus(string instanceId)
+    public async Task<IActionResult> GetPaymentStatus(string instanceId)
     {
         try
         {
-            // For now, return a mock status
-            // TODO: Implement proper status tracking
-            var response = new
+            var payment = await _context.PaymentTransactions
+                .Include(p => p.LedgerEntries)
+                .FirstOrDefaultAsync(p => p.TransactionId == instanceId);
+
+            if (payment == null)
             {
-                orchestrationId = instanceId,
-                runtimeStatus = "Completed",
-                createdTime = DateTime.UtcNow.AddMinutes(-5),
-                lastUpdatedTime = DateTime.UtcNow,
-                output = new { status = "Success" }
+                _logger.LogWarning("Payment transaction {TransactionId} not found", instanceId);
+                return NotFound(new { error = $"Payment transaction {instanceId} not found" });
+            }
+
+            var response = new PaymentStatusResponse
+            {
+                TransactionId = payment.TransactionId,
+                Status = payment.Status,
+                Amount = payment.Amount,
+                Currency = payment.Currency,
+                CreatedAt = payment.CreatedAt,
+                CompletedAt = payment.CompletedAt,
+                LedgerEntries = payment.LedgerEntries.Select(e => new LedgerEntryResponse
+                {
+                    Amount = e.Amount,
+                    EntryType = e.EntryType,
+                    Operation = e.Operation,
+                    Description = e.Description,
+                    CreatedAt = e.CreatedAt
+                }).ToList()
             };
 
             return Ok(response);
         }
         catch (Exception ex)
         {
-            _logger.LogError("Error getting payment status for instance {InstanceId}: {Error}",
-                instanceId, ex.Message);
+            _logger.LogError(ex, "Error getting payment status for instance {InstanceId}", instanceId);
             return StatusCode((int)HttpStatusCode.InternalServerError,
                 new { error = "An error occurred while retrieving payment status" });
         }

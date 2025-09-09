@@ -26,6 +26,21 @@ public class DonationsController : ControllerBase
     /// </summary>
     /// <param name="request">Donation creation request</param>
     /// <returns>Created donation</returns>
+    /// <remarks>
+    /// **Authentication Required**: This endpoint requires a valid JWT token in the Authorization header.
+    /// 
+    /// Sample request:
+    /// 
+    ///     POST /api/donations
+    ///     {
+    ///         "campaignId": 1,
+    ///         "amount": 100.00,
+    ///         "donorName": "John Doe",
+    ///         "donorEmail": "john.doe@example.com",
+    ///         "message": "Happy to support this cause!"
+    ///     }
+    /// 
+    /// </remarks>
     [HttpPost]
     [Authorize]
     public async Task<ActionResult<DonationResponse>> CreateDonation([FromBody] CreateDonationRequest request)

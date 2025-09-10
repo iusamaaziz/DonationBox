@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using DonationService.DTOs;
 using DonationService.Models;
 using DonationService.Services;
+using DonationService.Attributes;
+using DonationService.Extensions;
 
 namespace DonationService.Controllers;
 
@@ -23,6 +25,9 @@ public class CampaignsController : ControllerBase
     /// Get all donation campaigns
     /// </summary>
     /// <returns>List of all campaigns</returns>
+    /// <remarks>
+    /// **Public Endpoint**: No authentication required.
+    /// </remarks>
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CampaignResponse>>> GetAllCampaigns()
     {
@@ -42,6 +47,9 @@ public class CampaignsController : ControllerBase
     /// Get all active donation campaigns
     /// </summary>
     /// <returns>List of active campaigns</returns>
+    /// <remarks>
+    /// **Public Endpoint**: No authentication required.
+    /// </remarks>
     [HttpGet("active")]
     public async Task<ActionResult<IEnumerable<CampaignResponse>>> GetActiveCampaigns()
     {
@@ -112,7 +120,22 @@ public class CampaignsController : ControllerBase
     /// </summary>
     /// <param name="request">Campaign creation request</param>
     /// <returns>Created campaign</returns>
+    /// <remarks>
+    /// **Authentication Required**: This endpoint requires a valid JWT token in the Authorization header.
+    /// 
+    /// Sample request:
+    /// 
+    ///     POST /api/campaigns
+    ///     {
+    ///         "title": "Community Center Renovation",
+    ///         "description": "Help us renovate our local community center",
+    ///         "goalAmount": 50000,
+    ///         "endDate": "2024-12-31T23:59:59Z"
+    ///     }
+    /// 
+    /// </remarks>
     [HttpPost]
+    [Authorize]
     public async Task<ActionResult<CampaignResponse>> CreateCampaign([FromBody] CreateCampaignRequest request)
     {
         try
@@ -148,7 +171,11 @@ public class CampaignsController : ControllerBase
     /// <param name="id">Campaign ID</param>
     /// <param name="request">Campaign update request</param>
     /// <returns>Updated campaign</returns>
+    /// <remarks>
+    /// **Authentication Required**: This endpoint requires a valid JWT token in the Authorization header.
+    /// </remarks>
     [HttpPut("{id:int}")]
+    [Authorize]
     public async Task<ActionResult<CampaignResponse>> UpdateCampaign(int id, [FromBody] UpdateCampaignRequest request)
     {
         try
@@ -183,7 +210,11 @@ public class CampaignsController : ControllerBase
     /// </summary>
     /// <param name="id">Campaign ID</param>
     /// <returns>Success status</returns>
+    /// <remarks>
+    /// **Authentication Required**: This endpoint requires a valid JWT token in the Authorization header.
+    /// </remarks>
     [HttpDelete("{id:int}")]
+    [Authorize]
     public async Task<ActionResult> DeleteCampaign(int id)
     {
         try
@@ -209,7 +240,11 @@ public class CampaignsController : ControllerBase
     /// <param name="id">Campaign ID</param>
     /// <param name="status">New status</param>
     /// <returns>Success status</returns>
+    /// <remarks>
+    /// **Authentication Required**: This endpoint requires a valid JWT token in the Authorization header.
+    /// </remarks>
     [HttpPatch("{id:int}/status")]
+    [Authorize]
     public async Task<ActionResult> UpdateCampaignStatus(int id, [FromBody] CampaignStatus status)
     {
         try

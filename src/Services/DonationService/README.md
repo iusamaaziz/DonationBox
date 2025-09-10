@@ -131,6 +131,17 @@ Published when a new donation is created, containing:
 - **DTOs**: Data transfer objects for API requests/responses
 - **Events**: Event models for pub/sub messaging
 
+## Technology Stack
+
+- .NET 8
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- Redis (optional)
+- gRPC Client (for AuthService integration)
+- Swagger/OpenAPI
+- Health Checks
+
 ## Development Notes
 
 - The service follows Clean Architecture principles

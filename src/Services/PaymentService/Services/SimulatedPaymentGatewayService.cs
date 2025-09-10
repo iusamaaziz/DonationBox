@@ -26,7 +26,10 @@ public class SimulatedPaymentGatewayService : IPaymentGatewayService
         var response = new PaymentGatewayResponse
         {
             ProcessedAt = DateTime.UtcNow,
-            GatewayTransactionId = GenerateGatewayTransactionId(request.PaymentMethod)
+            GatewayTransactionId = GenerateGatewayTransactionId(request.PaymentMethod),
+            PaymentGateway = GetGatewayName(request.PaymentMethod),
+            Amount = request.Amount,
+            GatewayFee = CalculateProcessingFee(request.Amount, request.PaymentMethod)
         };
 
         // Simulate payment scenarios

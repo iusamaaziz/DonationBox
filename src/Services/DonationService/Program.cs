@@ -59,6 +59,13 @@ builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<IDonationService, DonationServiceImpl>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 
+// Register authentication services (gRPC)
+builder.Services.AddScoped<IAuthValidationService, GrpcAuthValidationService>();
+
+// Register DonorService gRPC client
+var donorServiceUrl = builder.Configuration["DonorService:Url"] ?? "http://localhost:5004";
+builder.Services.AddScoped(provider => new DonationService.Services.DonorClient(donorServiceUrl, provider.GetRequiredService<ILogger<DonationService.Services.DonorClient>>()));
+
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -67,11 +74,39 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Donation Service API",
         Version = "v1",
-        Description = "A microservice for managing donation campaigns and donations",
+        Description = "A microservice for managing donation campaigns and donations with JWT authentication",
         Contact = new OpenApiContact
         {
             Name = "DonationBox Team",
             Email = "support@donationbox.com"
+        }
+    });
+
+    // Add JWT authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Scheme = "oauth2",
+                Name = "Bearer",
+                In = ParameterLocation.Header,
+            },
+            new List<string>()
         }
     });
 

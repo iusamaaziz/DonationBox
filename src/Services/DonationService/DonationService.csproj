@@ -24,6 +24,17 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="StackExchange.Redis" Version="2.7.10" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.71.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.72.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Google.Protobuf" Version="3.32.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="Protos\auth.proto" GrpcServices="Client" />
+    <Protobuf Include="Protos\donor.proto" GrpcServices="Client" />
   </ItemGroup>
 
 </Project>

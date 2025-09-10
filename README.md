@@ -141,18 +141,28 @@ An Azure Functions-based microservice for processing donation payments with Dura
 A YARP-based API gateway that provides centralized routing, cross-cutting concerns, and unified API access to the microservices system.
 
 #### Features:
-- 🚧 **API Gateway**: Centralized entry point for all client requests
-- 🚧 **Request Routing**: Intelligent routing to appropriate microservices
-- 🚧 **Authentication**: Centralized authentication and authorization
-- 🚧 **Load Balancing**: Distribute requests across service instances
-- 🚧 **Rate Limiting**: Protect services from excessive requests
-- 🚧 **Logging & Monitoring**: Centralized logging and request tracing
+- ✅ **Reverse Proxy**: YARP-based routing to all microservices with intelligent path transformations
+- ✅ **Authentication**: JWT token validation and forwarding to downstream services
+- ✅ **Load Balancing**: Built-in load balancing support for service instances
+- ✅ **Health Monitoring**: Comprehensive health checks for all services with automatic failover
+- ✅ **CORS Support**: Configurable cross-origin resource sharing for frontend applications
+- ✅ **Request Logging**: Detailed request/response logging with correlation tracking
+- ✅ **Swagger Integration**: Centralized API documentation for all services
+- ✅ **Service Discovery**: Automatic service discovery and routing configuration
+
+#### API Endpoints:
+- **Gateway Routes**: `/api/auth/*`, `/api/donations/*`, `/api/campaigns/*`, `/api/donors/*`, `/api/payment/*`
+- **Gateway Services**: `/gateway/info`, `/gateway/status` (gateway information and status)
+- **Health Monitoring**: `/health` (comprehensive health check endpoint)
+- **API Documentation**: `/swagger` (centralized Swagger UI for all services)
 
 #### Technology Stack:
 - .NET 8
 - YARP (Yet Another Reverse Proxy)
-- ASP.NET Core
+- ASP.NET Core Web API
+- JWT Bearer Authentication
 - Swagger/OpenAPI
+- Health Checks
 
 ## Architecture
 
@@ -217,7 +227,7 @@ DonationBox/
 │   │       ├── Models/               # Payment entities
 │   │       ├── DTOs/                 # Payment request/response models
 │   │       └── Services/             # Business logic services
-│   ├── ApiGateway/                   # YARP API Gateway (In Development)
+│   ├── ApiGateway/                   # YARP API Gateway (Complete)
 │   └── Shared/                       # 🚧 Future: Shared libraries
 └── DonationBox.sln
 ```
@@ -311,16 +321,18 @@ func start
 - **Functions Host**: `http://localhost:7071`
 - **Swagger UI**: `http://localhost:7071/api/swagger/ui`
 
-#### 5. Start ApiGateway (Optional - In Development)
+#### 5. Start ApiGateway
 
 ```bash
-cd src/ApiGateway
+cd src/ApiGateway/ApiGateway
 dotnet restore
 dotnet run
 ```
 
-- **Gateway URL**: `http://localhost:5005`
-- **Routes to**: All other services
+- **Gateway URL**: `http://localhost:5000` (HTTP) or `https://localhost:7000` (HTTPS)
+- **Swagger UI**: `http://localhost:5000/swagger`
+- **Health Check**: `http://localhost:5000/health`
+- **Routes to**: All other services via YARP reverse proxy
 
 ### Testing the System
 
@@ -399,6 +411,48 @@ curl -X POST http://localhost:7071/api/payments/process \
   }'
 ```
 
+### Testing via ApiGateway
+
+Once all services are running, you can also test the entire system through the ApiGateway:
+
+#### Gateway Health Check
+```bash
+curl http://localhost:5000/health
+```
+
+#### Gateway Information
+```bash
+curl http://localhost:5000/gateway/info
+```
+
+#### Register User via Gateway
+```bash
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "Password123!",
+    "firstName": "John",
+    "lastName": "Doe"
+  }'
+```
+
+#### Get Campaigns via Gateway
+```bash
+curl http://localhost:5000/api/campaigns
+```
+
+#### Process Payment via Gateway
+```bash
+curl -X POST http://localhost:5000/api/payment/process \
+  -H "Content-Type: application/json" \
+  -d '{
+    "donationId": 1,
+    "campaignId": 1,
+    "amount": 100.00
+  }'
+```
+
 ### Configuration
 
 Each service uses environment-specific configuration files:
@@ -428,6 +482,12 @@ Each service uses environment-specific configuration files:
 - `ConnectionStrings:DefaultConnection`: SQL Server connection
 - `ConnectionStrings:Redis`: Redis connection (optional)
 
+**ApiGateway:**
+- `ReverseProxy:Routes`: YARP route configuration for all services
+- `ReverseProxy:Clusters`: Service cluster definitions with health checks
+- `JwtSettings:SecretKey`: JWT validation key for gateway authentication
+- `CorsSettings:AllowedOrigins`: Configurable CORS origins for frontend apps
+
 ### Sample Data
 
 The services automatically create and seed databases with sample data:
@@ -452,7 +512,7 @@ This project follows a microservices-first approach where each service is built 
 2. ✅ **DonationService** - Complete campaign and donation management with authentication integration
 3. ✅ **DonorService** - Complete donor and organization management
 4. ✅ **PaymentService** - Complete payment processing with Saga orchestration
-5. 🚧 **ApiGateway** - YARP-based API gateway (In Development)
+5. ✅ **ApiGateway** - Complete YARP-based API gateway with routing, authentication, and monitoring
 
 ### Service Development Guidelines:
 
@@ -471,13 +531,15 @@ This project follows a microservices-first approach where each service is built 
 
 ## Next Steps
 
-The core DonationBox system is now complete and functional. Future development will focus on:
+The core DonationBox microservices system is now complete and fully functional! All five services (AuthService, DonationService, DonorService, PaymentService, and ApiGateway) are implemented and ready for production use.
 
-### 1. **ApiGateway Completion**
-- Implement YARP-based request routing
-- Add centralized authentication and authorization
+Future development will focus on enhancing the system with additional capabilities:
+
+### 1. **Enhanced ApiGateway Features**
 - Implement rate limiting and request throttling
-- Add request/response transformation and logging
+- Add request/response transformation middleware
+- Implement circuit breaker patterns
+- Add distributed tracing with OpenTelemetry
 
 ### 2. **NotificationService** (New Service)
 - Email notifications for donors and campaign creators
@@ -573,6 +635,13 @@ Each service is self-contained and can be developed independently. However, to m
 - Use distributed locks to prevent duplicate payments
 - Implement outbox pattern for event publishing
 - Maintain comprehensive payment audit trails
+
+#### ApiGateway
+- Configure YARP routes for new services when added
+- Implement proper health checks for all downstream services
+- Maintain JWT token validation and forwarding
+- Configure CORS policies for frontend applications
+- Implement comprehensive logging and monitoring
 
 ### Pull Request Process
 

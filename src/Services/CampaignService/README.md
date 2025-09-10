@@ -1,0 +1,148 @@
+# CampaignService
+
+A microservice for managing donation campaigns in the DonationBox system.
+
+## Overview
+
+CampaignService handles all campaign-related operations including:
+- Creating and managing donation campaigns
+- Tracking campaign progress and statistics
+- Managing campaign status and lifecycle
+- Eventual consistency updates from donation payments
+
+## Architecture
+
+CampaignService follows a microservice architecture pattern with:
+- **Event-Driven Communication**: Receives events from DonationService when payments are completed
+- **Separate Database**: Isolated campaign data with its own database context
+- **RESTful API**: Provides HTTP endpoints for campaign management
+- **Authentication**: JWT token validation via AuthService
+
+## Key Features
+
+### Campaign Management
+- Create, read, update, and delete donation campaigns
+- Campaign status management (Draft, Active, Paused, Completed, Cancelled)
+- Campaign statistics and progress tracking
+- Multi-tenant support (campaigns by creator)
+
+### Event Processing
+- Consumes `DonationPaymentCompletedEvent` from DonationService
+- Updates campaign amounts asynchronously
+- Maintains eventual consistency between services
+
+### Caching
+- Redis-based caching for performance
+- Configurable cache expiration
+- Cache invalidation on data changes
+
+## API Endpoints
+
+### Campaigns
+- `GET /api/campaigns` - Get all campaigns
+- `GET /api/campaigns/active` - Get active campaigns
+- `GET /api/campaigns/{id}` - Get campaign by ID
+- `POST /api/campaigns` - Create new campaign
+- `PUT /api/campaigns/{id}` - Update campaign
+- `DELETE /api/campaigns/{id}` - Delete campaign
+
+### Campaign Statistics
+- `GET /api/campaigns/{id}/stats` - Get campaign statistics
+- `POST /api/campaigns/{id}/refresh-stats` - Refresh campaign statistics
+
+### Status Management
+- `PATCH /api/campaigns/{id}/status` - Update campaign status
+
+## Event Flow
+
+```
+DonationService → DonationPaymentCompletedEvent → CampaignService
+    ↓                      ↓                           ↓
+Process Payment    Publish Event              Update Campaign Amount
+```
+
+## Configuration
+
+### Environment Variables
+- `UseRedis`: Enable/disable Redis caching (default: false)
+- `AuthService:Url`: URL for AuthService gRPC endpoint
+
+### Database
+- Uses SQL Server with Entity Framework Core
+- Database: `CampaignServiceDb`
+- Auto-creates database and applies migrations
+
+## Dependencies
+
+- **AuthService**: JWT token validation
+- **DonationService**: Source of donation events
+- **Redis**: Optional caching (when enabled)
+- **SQL Server**: Primary data store
+
+## Health Checks
+
+- `GET /health` - Service health status
+- `GET /info` - Service information and configuration
+
+## Development
+
+### Prerequisites
+- .NET 8.0 SDK
+- SQL Server (LocalDB or full instance)
+- Redis (optional, for caching)
+
+### Running Locally
+```bash
+# Restore packages
+dotnet restore
+
+# Run migrations (if needed)
+dotnet ef database update
+
+# Run the service
+dotnet run
+```
+
+### Testing
+```bash
+# Run unit tests
+dotnet test
+
+# Run integration tests
+dotnet test --filter Category=Integration
+```
+
+## Deployment
+
+CampaignService is designed to run as a containerized microservice:
+
+```dockerfile
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+COPY . /app
+WORKDIR /app
+EXPOSE 80
+ENTRYPOINT ["dotnet", "CampaignService.dll"]
+```
+
+## Monitoring
+
+- Structured logging with Serilog
+- Health checks for dependencies
+- Performance metrics via built-in ASP.NET Core metrics
+- Distributed tracing support (can be added)
+
+## Security
+
+- JWT token authentication for protected endpoints
+- Input validation and sanitization
+- CORS configuration for cross-origin requests
+- HTTPS enforcement in production
+
+## Future Enhancements
+
+- [ ] Message queue integration (RabbitMQ, Azure Service Bus)
+- [ ] Advanced caching strategies
+- [ ] Campaign analytics and reporting
+- [ ] Campaign templates and cloning
+- [ ] Integration with payment processors
+- [ ] Real-time campaign updates via WebSockets

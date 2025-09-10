@@ -1,0 +1,32 @@
+{
+  "version": "2.0",
+  "logging": {
+    "applicationInsights": {
+      "samplingSettings": {
+        "isEnabled": true,
+        "excludedTypes": "Request"
+      }
+    },
+    "logLevel": {
+      "default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  },
+  "extensions": {
+    "durableTask": {
+      "hubName": "PaymentSagaHub",
+      "storageProvider": {
+        "connectionStringName": "AzureWebJobsStorage"
+      },
+      "tracing": {
+        "traceInputsAndOutputs": false,
+        "traceReplayEvents": false
+      }
+    },
+    "http": {
+      "routePrefix": ""
+    }
+  }
+}
+

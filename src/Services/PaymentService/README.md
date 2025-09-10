@@ -444,6 +444,17 @@ func azure functionapp publish <function-app-name>
 - Database query analysis
 - Redis monitoring commands
 
+## Technology Stack
+
+- .NET 8
+- Azure Functions v4 (Isolated Worker)
+- Durable Functions
+- Entity Framework Core
+- SQL Server
+- Redis (optional)
+- Azure Storage
+- Swagger/OpenAPI
+
 ## Contributing
 
 The PaymentService follows microservices best practices and domain-driven design principles. When extending functionality:

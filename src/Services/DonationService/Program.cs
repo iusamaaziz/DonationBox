@@ -62,6 +62,10 @@ builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 // Register authentication services (gRPC)
 builder.Services.AddScoped<IAuthValidationService, GrpcAuthValidationService>();
 
+// Register DonorService gRPC client
+var donorServiceUrl = builder.Configuration["DonorService:Url"] ?? "http://localhost:5004";
+builder.Services.AddScoped(provider => new DonationService.Services.DonorClient(donorServiceUrl, provider.GetRequiredService<ILogger<DonationService.Services.DonorClient>>()));
+
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>

@@ -1,0 +1,6 @@
+@DonorService_HostAddress = http://localhost:5069
+
+GET {{DonorService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

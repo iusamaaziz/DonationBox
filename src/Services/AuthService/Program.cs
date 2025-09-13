@@ -156,7 +156,11 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseHttpsRedirection();
+// Redirect HTTP to HTTPS outside of Development
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 app.UseCors();
 
 app.UseAuthentication();

@@ -4,7 +4,7 @@ A comprehensive microservices-based donation management system built with .NET 8
 
 ## System Overview
 
-DonationBox is designed as a scalable microservices architecture that allows organizations to manage donation campaigns, process donations, and track progress efficiently. The system consists of five core services working together to provide a complete donation management solution.
+DonationBox is designed as a scalable microservices architecture that allows organizations to manage donation campaigns, process donations, and track progress efficiently. The system consists of six core services working together to provide a complete donation management solution.
 
 ## Services
 
@@ -41,27 +41,57 @@ A .NET 8 ASP.NET Core Web API service for user authentication with JWT tokens an
 - BCrypt.Net
 - Swagger/OpenAPI
 
-### 2. DonationService
+> For Docker usage with HTTPS dev certs, see `src/Services/AuthService/README.md` (section "Docker (with HTTPS Dev Cert)").
 
-**Location**: `src/Services/DonationService/`
+### 2. CampaignService
 
-A .NET 8 ASP.NET Core Web API service for managing donation campaigns and donations with integrated authentication.
+**Location**: `src/Services/CampaignService/`
+
+A .NET 8 ASP.NET Core Web API service for managing donation campaigns with event-driven architecture and authentication integration.
 
 #### Features:
 - ✅ **Campaign Management**: Create, update, delete, and manage donation campaigns
+- ✅ **Campaign Statistics**: Track campaign progress, amounts raised, and donor counts
+- ✅ **Status Management**: Handle campaign lifecycle (Draft, Active, Paused, Completed, Cancelled)
+- ✅ **Event Processing**: Consumes `DonationPaymentCompletedEvent` from DonationService for eventual consistency
+- ✅ **Authentication Integration**: Validates requests with AuthService via gRPC before processing
+- ✅ **SQL Server Database**: Entity Framework Core with SQL Server for isolated campaign data
+- ✅ **Redis Caching**: Optional Redis caching for performance optimization
+- ✅ **REST API**: Comprehensive REST API with Swagger documentation
+- ✅ **Health Checks**: Built-in health check endpoints
+
+#### API Endpoints:
+- **Campaigns**: CRUD operations, status management, statistics (create/update/delete require authentication)
+- **Campaign Statistics**: Get campaign progress and analytics
+- **System**: Health checks and service information
+
+#### Technology Stack:
+- .NET 8
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- Redis (optional)
+- gRPC Client (for AuthService integration)
+- Swagger/OpenAPI
+- Health Checks
+
+### 3. DonationService
+
+**Location**: `src/Services/DonationService/`
+
+A .NET 8 ASP.NET Core Web API service for processing donations with event-driven communication to CampaignService.
+
+#### Features:
 - ✅ **Donation Processing**: Handle donation pledges and payment processing
+- ✅ **Event Publishing**: Publishes `DonationPaymentCompletedEvent` when payments are completed
 - ✅ **Authentication Integration**: Validates requests with AuthService via gRPC before processing
 - ✅ **SQL Server Database**: Entity Framework Core with SQL Server for data persistence
 - ✅ **Redis Caching**: Optional Redis caching controlled by `UseRedis` environment variable
-  - Active campaigns cached for 15 minutes
-  - Campaign statistics cached for 5 minutes
-- ✅ **Event Publishing**: Publishes `DonationPledgedEvent` when donations are created
 - ✅ **REST API**: Comprehensive REST API with Swagger documentation
 - ✅ **Health Checks**: Built-in health check endpoints
 - ✅ **Configuration**: Environment-based configuration with development and production settings
 
 #### API Endpoints:
-- **Campaigns**: CRUD operations, status management, statistics (create/update/delete require authentication)
 - **Donations**: Create donations, process payments, retrieve by campaign (create requires authentication)
 - **System**: Health checks and service information
 
@@ -75,7 +105,7 @@ A .NET 8 ASP.NET Core Web API service for managing donation campaigns and donati
 - Swagger/OpenAPI
 - Health Checks
 
-### 3. DonorService
+### 4. DonorService
 
 **Location**: `src/Services/DonorService/`
 
@@ -104,7 +134,7 @@ A .NET 8 microservice for managing donors and their welfare organizations in the
 - gRPC Server & Client
 - Swagger/OpenAPI
 
-### 4. PaymentService
+### 5. PaymentService
 
 **Location**: `src/Services/PaymentService/`
 
@@ -134,7 +164,7 @@ An Azure Functions-based microservice for processing donation payments with Dura
 - Azure Storage
 - Swagger/OpenAPI
 
-### 5. ApiGateway
+### 6. ApiGateway
 
 **Location**: `src/ApiGateway/`
 
@@ -177,15 +207,22 @@ A YARP-based API gateway that provides centralized routing, cross-cutting concer
                         │                   │
                         ▼                   ▼
                ┌─────────────┐    ┌─────────────┐
-               │DonationSvc  │────│ DonorService │
+               │CampaignSvc  │    │ DonorService │
                │             │    │             │
                └─────────────┘    └─────────────┘
+                        ▲                   │
+                        │                   │
+                        │                   ▼
+               ┌─────────────┐    ┌─────────────┐
+               │DonationSvc  │────│PaymentSvc   │
+               │             │    │(Azure Func) │
+               └─────────────┘    └─────────────┘
                         │
-                        │
+                        │ Events
                         ▼
                ┌─────────────┐
-               │PaymentSvc   │
-               │ (Azure Func)│
+               │CampaignSvc  │
+               │(Event Consumer)│
                └─────────────┘
 ```
 
@@ -202,11 +239,20 @@ DonationBox/
 │   │   │   ├── Models/               # User & token entities
 │   │   │   ├── DTOs/                 # Auth request/response models
 │   │   │   └── Attributes/           # Custom authorization attributes
-│   │   ├── DonationService/          # Campaign & donation management
+│   │   ├── CampaignService/          # Campaign management & statistics
+│   │   │   ├── Controllers/          # REST API controllers
+│   │   │   ├── Services/             # Business logic + event processing
+│   │   │   ├── Data/                 # EF Core DbContext
+│   │   │   ├── Models/               # Campaign entities
+│   │   │   ├── DTOs/                 # Data transfer objects
+│   │   │   ├── Events/               # Event models
+│   │   │   ├── Attributes/           # Authorization attributes
+│   │   │   └── Extensions/           # Controller extensions
+│   │   ├── DonationService/          # Donation processing & events
 │   │   │   ├── Controllers/          # REST API controllers
 │   │   │   ├── Services/             # Business logic + auth validation
 │   │   │   ├── Data/                 # EF Core DbContext
-│   │   │   ├── Models/               # Domain entities
+│   │   │   ├── Models/               # Donation entities
 │   │   │   ├── DTOs/                 # Data transfer objects
 │   │   │   ├── Events/               # Event models
 │   │   │   ├── Attributes/           # Authorization attributes
@@ -227,8 +273,7 @@ DonationBox/
 │   │       ├── Models/               # Payment entities
 │   │       ├── DTOs/                 # Payment request/response models
 │   │       └── Services/             # Business logic services
-│   ├── ApiGateway/                   # YARP API Gateway (Complete)
-│   └── Shared/                       # 🚧 Future: Shared libraries
+├── ApiGateway/                   # YARP API Gateway (Complete)
 └── DonationBox.sln
 ```
 
@@ -261,9 +306,10 @@ The services have the following startup order and dependencies:
 
 1. **AuthService** - No dependencies (start first)
 2. **DonorService** - Depends on AuthService (gRPC)
-3. **DonationService** - Depends on AuthService (gRPC)
-4. **PaymentService** - Depends on DonationService (events)
-5. **ApiGateway** - Depends on all services (routes to them)
+3. **CampaignService** - Depends on AuthService (gRPC)
+4. **DonationService** - Depends on AuthService (gRPC)
+5. **PaymentService** - Depends on DonationService (events)
+6. **ApiGateway** - Depends on all services (routes to them)
 
 ### Running the Services
 
@@ -278,6 +324,8 @@ dotnet run
 - **Swagger UI**: `https://localhost:7002` or `http://localhost:5002`
 - **gRPC Endpoint**: `http://localhost:5001` (for inter-service communication)
 
+> To run AuthService in Docker with HTTPS, follow the guide in `src/Services/AuthService/README.md`.
+
 #### 2. Start DonorService
 
 ```bash
@@ -289,7 +337,18 @@ dotnet run
 - **HTTP API**: `https://localhost:5003` or `http://localhost:5002`
 - **gRPC Endpoint**: `http://localhost:5004`
 
-#### 3. Start DonationService
+#### 3. Start CampaignService
+
+```bash
+cd src/Services/CampaignService
+dotnet restore
+dotnet run
+```
+
+- **Swagger UI**: `https://localhost:5005` or `http://localhost:5004`
+- **Depends on**: AuthService (gRPC for authentication)
+
+#### 4. Start DonationService
 
 ```bash
 cd src/Services/DonationService
@@ -300,7 +359,7 @@ dotnet run
 - **Swagger UI**: `https://localhost:5001` or `http://localhost:5000`
 - **Depends on**: AuthService (gRPC for authentication)
 
-#### 4. Start PaymentService (Azure Functions)
+#### 5. Start PaymentService (Azure Functions)
 
 ```bash
 # Install Azure Functions Core Tools (if not already installed)
@@ -321,7 +380,7 @@ func start
 - **Functions Host**: `http://localhost:7071`
 - **Swagger UI**: `http://localhost:7071/api/swagger/ui`
 
-#### 5. Start ApiGateway
+#### 6. Start ApiGateway
 
 ```bash
 cd src/ApiGateway/ApiGateway
@@ -375,10 +434,10 @@ curl -X POST https://localhost:5003/api/donors \
   }'
 ```
 
-#### 4. Create a Campaign (DonationService)
+#### 4. Create a Campaign (CampaignService)
 
 ```bash
-curl -X POST https://localhost:5001/api/campaigns \
+curl -X POST https://localhost:5005/api/campaigns \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -389,7 +448,22 @@ curl -X POST https://localhost:5001/api/campaigns \
   }'
 ```
 
-#### 5. Process a Payment (PaymentService)
+#### 5. Create a Donation (DonationService)
+
+```bash
+curl -X POST https://localhost:5001/api/donations \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "campaignId": 1,
+    "amount": 100.00,
+    "donorName": "John Doe",
+    "donorEmail": "john.doe@example.com",
+    "message": "Great cause!"
+  }'
+```
+
+#### 6. Process a Payment (PaymentService)
 
 ```bash
 curl -X POST http://localhost:7071/api/payments/process \
@@ -442,6 +516,19 @@ curl -X POST http://localhost:5000/api/auth/register \
 curl http://localhost:5000/api/campaigns
 ```
 
+#### Create Campaign via Gateway
+```bash
+curl -X POST http://localhost:5000/api/campaigns \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "title": "Emergency Relief Fund",
+    "description": "Help families in need",
+    "goalAmount": 25000.00,
+    "targetDate": "2024-12-31T00:00:00Z"
+  }'
+```
+
 #### Process Payment via Gateway
 ```bash
 curl -X POST http://localhost:5000/api/payment/process \
@@ -467,6 +554,12 @@ Each service uses environment-specific configuration files:
 - `JwtSettings:SecretKey`: JWT signing key (must be 256+ bits)
 - `ConnectionStrings:DefaultConnection`: SQL Server connection
 - `GoogleAuth:ClientId/ClientSecret`: Google OAuth credentials
+
+**CampaignService:**
+- `UseRedis`: Enable/disable Redis caching (default: false)
+- `ConnectionStrings:DefaultConnection`: SQL Server connection
+- `ConnectionStrings:Redis`: Redis connection string
+- `AuthService:Url`: AuthService gRPC endpoint
 
 **DonationService:**
 - `UseRedis`: Enable/disable Redis caching (default: false)
@@ -497,7 +590,7 @@ The services automatically create and seed databases with sample data:
 - `john.doe@example.com` / `Password123!`
 - `jane.smith@example.com` / `Password123!`
 
-**DonationService Sample Campaigns:**
+**CampaignService Sample Campaigns:**
 - Community Center Renovation (Active, $15k raised of $50k goal)
 - Emergency Relief Fund (Active, $8.5k raised of $25k goal)
 - School Technology Upgrade (Completed, $75k goal reached)
@@ -509,10 +602,11 @@ This project follows a microservices-first approach where each service is built 
 ### Current Services Status:
 
 1. ✅ **AuthService** - Complete user authentication with JWT and Google OAuth
-2. ✅ **DonationService** - Complete campaign and donation management with authentication integration
-3. ✅ **DonorService** - Complete donor and organization management
-4. ✅ **PaymentService** - Complete payment processing with Saga orchestration
-5. ✅ **ApiGateway** - Complete YARP-based API gateway with routing, authentication, and monitoring
+2. ✅ **CampaignService** - Complete campaign management with event-driven architecture
+3. ✅ **DonationService** - Complete donation processing with event publishing
+4. ✅ **DonorService** - Complete donor and organization management
+5. ✅ **PaymentService** - Complete payment processing with Saga orchestration
+6. ✅ **ApiGateway** - Complete YARP-based API gateway with routing, authentication, and monitoring
 
 ### Service Development Guidelines:
 
@@ -531,7 +625,7 @@ This project follows a microservices-first approach where each service is built 
 
 ## Next Steps
 
-The core DonationBox microservices system is now complete and fully functional! All five services (AuthService, DonationService, DonorService, PaymentService, and ApiGateway) are implemented and ready for production use.
+The core DonationBox microservices system is now complete and fully functional! All six services (AuthService, CampaignService, DonationService, DonorService, PaymentService, and ApiGateway) are implemented and ready for production use.
 
 Future development will focus on enhancing the system with additional capabilities:
 
@@ -618,11 +712,17 @@ Each service is self-contained and can be developed independently. However, to m
 - Secure password hashing with BCrypt
 - Implement proper refresh token rotation
 
+#### CampaignService
+- Validate all requests with AuthService
+- Use Redis caching for performance optimization
+- Consume events from DonationService for campaign updates
+- Maintain campaign statistics and progress tracking
+
 #### DonationService
 - Validate all requests with AuthService
 - Use Redis caching for performance optimization
 - Publish events for payment processing
-- Maintain data consistency across campaigns and donations
+- Maintain donation data integrity
 
 #### DonorService
 - Validate user existence with AuthService

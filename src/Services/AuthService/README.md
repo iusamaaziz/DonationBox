@@ -200,3 +200,52 @@ To enable Google OAuth:
 - Google OAuth
 - BCrypt.Net for password hashing
 - Swagger/OpenAPI for documentation
+
+---
+
+## Docker (with HTTPS Dev Cert)
+
+This service includes a Dockerfile and development compose to run with HTTPS inside the container using the ASP.NET Core development certificate.
+
+### 1) Export the dev certificate (one-time)
+```powershell
+# from repo root
+pwsh ./prepare-dev-cert.ps1 -OutputDir ./.certs -Password devcert-password
+```
+
+### 2) Build and run with Docker Compose (Dev)
+```powershell
+docker compose -f docker-compose.dev.yml up --build
+```
+
+- HTTPS: https://localhost:8443/
+- HTTP: http://localhost:8080/
+
+Kestrel HTTPS configuration is defined in `src/Services/AuthService/appsettings.Development.json`:
+- Certificate path: `/https/aspnetapp.pfx`
+- Certificate password: `devcert-password`
+
+The compose file mounts the exported PFX:
+- Host: `./.certs/aspnetapp.pfx`
+- Container: `/https/aspnetapp.pfx`
+
+### 3) Override settings (optional)
+Update `appsettings.Development.json` or set env vars in `docker-compose.dev.yml` for:
+- `ConnectionStrings__DefaultConnection`
+- `JwtSettings__*`
+- `GoogleAuth__*`
+
+### Production image (example)
+```powershell
+# Build
+docker build -f src/Services/AuthService/Dockerfile -t donationbox/authservice:latest .
+# Run (mount your production cert and set strong JWT key)
+docker run -d --name authservice \`
+  -p 8080:8080 -p 8443:8443 \`
+  -v C:\\path\\to\\prod\\authservice.pfx:/https/aspnetapp.pfx:ro \`
+  -e ASPNETCORE_ENVIRONMENT=Production \`
+  -e Kestrel__Endpoints__Https__Certificate__Path=/https/aspnetapp.pfx \`
+  -e Kestrel__Endpoints__Https__Certificate__Password=REPLACE_ME \`
+  -e JwtSettings__SecretKey=REPLACE_WITH_STRONG_256_BIT_SECRET \`
+  donationbox/authservice:latest
+```

@@ -7,7 +7,7 @@ namespace AuthService.Services;
 /// <summary>
 /// gRPC implementation of the authentication service
 /// </summary>
-public class GrpcAuthenticationService : AuthenticationService.AuthenticationServiceBase
+public class GrpcAuthenticationService : Grpc.AuthenticationService.AuthenticationServiceBase
 {
     private readonly IAuthService _authService;
     private readonly ILogger<GrpcAuthenticationService> _logger;

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using AuthService.DTOs;
 using AuthService.Services;
 using System.Net;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AuthService.Controllers;
 
@@ -129,6 +130,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <param name="request">Refresh token request</param>
     /// <returns>New authentication response with JWT tokens</returns>
+    [Authorize]
     [HttpPost("refresh")]
     [ProducesResponseType(typeof(AuthenticationResponse), (int)HttpStatusCode.OK)]
     [ProducesResponseType((int)HttpStatusCode.BadRequest)]

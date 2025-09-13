@@ -1,28 +1,29 @@
-using Microsoft.EntityFrameworkCore;
-using BCrypt.Net;
 using AuthService.Data;
 using AuthService.DTOs;
 using AuthService.Models;
+
 using Google.Apis.Auth;
+
+using Microsoft.EntityFrameworkCore;
 
 namespace AuthService.Services;
 
 /// <summary>
 /// Authentication service implementation
 /// </summary>
-public class AuthServiceImpl : IAuthService
+public class AuthenticationService : IAuthService
 {
     private readonly AuthDbContext _context;
     private readonly IJwtService _jwtService;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<AuthServiceImpl> _logger;
+    private readonly ILogger<AuthenticationService> _logger;
     private readonly int _refreshTokenExpirationDays;
 
-    public AuthServiceImpl(
+    public AuthenticationService(
         AuthDbContext context,
         IJwtService jwtService,
         IConfiguration configuration,
-        ILogger<AuthServiceImpl> logger)
+        ILogger<AuthenticationService> logger)
     {
         _context = context;
         _jwtService = jwtService;

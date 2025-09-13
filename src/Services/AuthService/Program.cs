@@ -70,7 +70,7 @@ builder.Services.AddLogging(logging =>
 });
 
 // Register application services
-builder.Services.AddScoped<IAuthService, AuthServiceImpl>();
+builder.Services.AddScoped<IAuthService, AuthenticationService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ITokenValidationService, TokenValidationService>();
 
@@ -168,7 +168,7 @@ app.MapControllers();
 app.MapGrpcService<GrpcAuthenticationService>();
 
 // Add health check endpoint
-app.MapHealthChecks("/health");
+app.MapHealthChecks("/api/health");
 
 // Add a simple info endpoint
 app.MapGet("/info", () => new

@@ -161,10 +161,10 @@ app.MapGet("/gateway/info", () => new
     Timestamp = DateTime.UtcNow,
     Services = new[]
     {
-        new { Name = "AuthService", Url = "http://localhost:5002" },
-        new { Name = "DonationService", Url = "http://localhost:5131" },
-        new { Name = "DonorService", Url = "http://localhost:5069" },
-        new { Name = "PaymentService", Url = "http://localhost:5296" }
+        new { Name = "AuthService", Url = "https://localhost:7002" },
+        //new { Name = "DonationService", Url = "http://localhost:5131" },
+        //new { Name = "DonorService", Url = "http://localhost:5069" },
+        //new { Name = "PaymentService", Url = "http://localhost:5296" }
     }
 })
 .WithName("GetGatewayInfo")

@@ -1,0 +1,44 @@
+# .NET build output
+**/[Bb]in/
+**/[Oo]bj/
+
+# User-specific files
+**/*.user
+**/*.suo
+**/*.userosscache
+**/*.sln.docstates
+
+# IDE folders
+**/.vs/
+**/.vscode/
+
+# Node modules (if any)
+**/node_modules/
+
+# Logs and temp
+**/*.log
+**/logs/
+**/temp/
+**/tmp/
+
+# Docker artifacts
+**/.docker/
+**/.certs/
+
+# Secrets (never copy into image)
+**/secrets/**
+**/*.pfx
+**/*.snk
+
+# Local settings files
+**/local.settings.json
+**/*.Development.json
+!src/Services/AuthService/appsettings.Development.json
+
+# Git
+**/.git/
+**/.gitignore
+
+# OS junk
+**/.DS_Store
+**/Thumbs.db

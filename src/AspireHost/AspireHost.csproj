@@ -16,8 +16,9 @@
     <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.4.2" />
     <PackageReference Include="KubernetesClient" Version="17.0.14" />
 
-    <!-- Reference to AuthService project -->
-    <ProjectReference Include="..\Services\AuthService\AuthService.csproj" />
+    <!-- Reference to Service projects -->
+	  <ProjectReference Include="..\Services\AuthService\AuthService.csproj" />
+	  <ProjectReference Include="..\Services\OrganizationService\OrganizationService.csproj" />
   </ItemGroup>
 
 </Project>

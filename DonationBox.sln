@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrganizationService", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireHost", "src\AspireHost\AspireHost.csproj", "{339EB86B-E960-4673-A886-958366BE5010}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AspireServiceDefaults", "src\Services\AspireServiceDefaults\AspireServiceDefaults.csproj", "{77ADC561-A6EC-459E-9CBD-9AF6479CC350}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +131,18 @@ Global
 		{339EB86B-E960-4673-A886-958366BE5010}.Release|x64.Build.0 = Release|Any CPU
 		{339EB86B-E960-4673-A886-958366BE5010}.Release|x86.ActiveCfg = Release|Any CPU
 		{339EB86B-E960-4673-A886-958366BE5010}.Release|x86.Build.0 = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|x64.Build.0 = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Debug|x86.Build.0 = Debug|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|x64.ActiveCfg = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|x64.Build.0 = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|x86.ActiveCfg = Release|Any CPU
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -143,6 +157,7 @@ Global
 		{A1B2C3D4-E5F6-7890-ABCD-EF1234567890} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{206018B1-26CB-4AA0-AB77-79E2042B7FF2} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{339EB86B-E960-4673-A886-958366BE5010} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{77ADC561-A6EC-459E-9CBD-9AF6479CC350} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36E607AE-A855-46F6-B380-839BD5D35423}

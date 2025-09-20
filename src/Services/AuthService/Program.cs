@@ -18,7 +18,7 @@ builder.Services.AddControllers()
     });
 
 // Configure Entity Framework
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("AuthDb") 
     ?? "Server=(localdb)\\mssqllocaldb;Database=AuthServiceDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true";
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
@@ -172,7 +172,7 @@ app.MapControllers();
 app.MapGrpcService<GrpcAuthenticationService>();
 
 // Add health check endpoint
-app.MapHealthChecks("/api/health");
+app.MapHealthChecks("/health");
 
 // Add a simple info endpoint
 app.MapGet("/info", () => new

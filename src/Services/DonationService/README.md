@@ -11,6 +11,9 @@ A .NET 8 microservice for managing donation campaigns and donations in the Donat
 - **REST API**: Comprehensive REST API with Swagger documentation
 - **Entity Framework Core**: SQL Server database with EF Core for data persistence
 - **Health Checks**: Built-in health checks for database and Redis connectivity
+- **Service Discovery**: Automatic discovery of AuthService for authentication
+- **Observability**: OpenTelemetry integration for donation processing flows
+- **Database Provisioning**: SQL Server database `DonationDb` automatically created
 
 ## API Endpoints
 
@@ -39,6 +42,16 @@ A .NET 8 microservice for managing donation campaigns and donations in the Donat
 
 ## Configuration
 
+### With .NET Aspire
+
+When running with Aspire, configuration is simplified:
+- **Database**: `DonationDb` (automatically provisioned by Aspire)
+- **AuthService**: Discovered automatically via service discovery
+- **Redis**: Configured via Aspire resources when available
+- **Event Publishing**: Reliable event delivery with resilience patterns
+
+### Standalone Configuration (Legacy)
+
 ### Environment Variables
 
 - `UseRedis`: Boolean flag to enable/disable Redis caching (default: false)
@@ -61,6 +74,30 @@ A .NET 8 microservice for managing donation campaigns and donations in the Donat
 ```
 
 ## Running the Service
+
+### Running with .NET Aspire (Recommended)
+
+The DonationService is integrated with .NET Aspire for simplified development:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Setup**:
+   - SQL Server database `DonationDb` is provisioned
+   - AuthService dependency is automatically discovered
+   - Redis caching is configured if available
+   - Event publishing is set up with resilience patterns
+
+3. **Development Experience**:
+   - Hot reload for code changes
+   - Real-time logs in Aspire dashboard
+   - Service health monitoring
+   - Database migrations applied automatically
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 
@@ -135,10 +172,12 @@ Published when a new donation is created, containing:
 
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - Redis (optional)
 - gRPC Client (for AuthService integration)
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 - Health Checks
 

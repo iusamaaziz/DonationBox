@@ -18,8 +18,7 @@ builder.Services.AddControllers()
     });
 
 // Configure Entity Framework
-var connectionString = builder.Configuration.GetConnectionString("AuthDb") 
-    ?? "Server=(localdb)\\mssqllocaldb;Database=AuthServiceDb;Trusted_Connection=true;MultipleActiveResultSets=true;TrustServerCertificate=true";
+var connectionString = builder.Configuration.GetConnectionString("AuthDb");
 
 builder.Services.AddDbContext<AuthDbContext>(options =>
     options.UseSqlServer(connectionString));
@@ -152,7 +151,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "Authentication Service API v1");
-        c.RoutePrefix = string.Empty; // Serve Swagger UI at the app's root
+        c.RoutePrefix = string.Empty;
     });
 }
 

@@ -33,12 +33,14 @@ A .NET 8 ASP.NET Core Web API service for user authentication with JWT tokens an
 #### Technology Stack:
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - JWT Bearer Authentication
 - Google OAuth
-- gRPC Server
+- gRPC Server & Client
 - BCrypt.Net
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 
 > For Docker usage with HTTPS dev certs, see `src/Services/AuthService/README.md` (section "Docker (with HTTPS Dev Cert)").
@@ -68,10 +70,12 @@ A .NET 8 ASP.NET Core Web API service for managing donation campaigns with event
 #### Technology Stack:
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - Redis (optional)
 - gRPC Client (for AuthService integration)
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 - Health Checks
 
@@ -98,10 +102,12 @@ A .NET 8 ASP.NET Core Web API service for processing donations with event-driven
 #### Technology Stack:
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - Redis (optional)
 - gRPC Client (for AuthService integration)
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 - Health Checks
 
@@ -129,9 +135,11 @@ A .NET 8 microservice for managing donors and their welfare organizations in the
 #### Technology Stack:
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - gRPC Server & Client
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 
 ### 5. PaymentService
@@ -157,11 +165,13 @@ An Azure Functions-based microservice for processing donation payments with Dura
 #### Technology Stack:
 - .NET 8
 - Azure Functions v4 (Isolated Worker)
+- .NET Aspire (orchestration, observability)
 - Durable Functions
 - Entity Framework Core
 - SQL Server
 - Redis (optional)
 - Azure Storage
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 
 ### 6. ApiGateway
@@ -190,7 +200,9 @@ A YARP-based API gateway that provides centralized routing, cross-cutting concer
 - .NET 8
 - YARP (Yet Another Reverse Proxy)
 - ASP.NET Core Web API
+- .NET Aspire (service discovery, observability)
 - JWT Bearer Authentication
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 - Health Checks
 
@@ -279,6 +291,7 @@ DonationBox/
 
 ### Technology Stack
 
+- **Orchestration**: .NET Aspire (service discovery, observability, resource management)
 - **Backend**: .NET 8, ASP.NET Core Web API
 - **Database**: SQL Server with Entity Framework Core
 - **Caching**: Redis (optional)
@@ -287,18 +300,124 @@ DonationBox/
 - **Communication**: REST APIs, gRPC for inter-service communication
 - **Authentication**: JWT tokens with refresh token support
 - **Documentation**: Swagger/OpenAPI
-- **Monitoring**: Health checks and structured logging
+- **Observability**: OpenTelemetry, structured logging, metrics
+- **Service Discovery**: Aspire service discovery for inter-service communication
+
+## .NET Aspire Integration
+
+This project is fully integrated with **.NET Aspire** for enhanced development experience, orchestration, and observability.
+
+### What is .NET Aspire?
+
+.NET Aspire is a cloud-ready stack for building observable, production-ready apps with distributed services. It provides:
+
+- **🚀 Service Orchestration**: Automatic startup, dependency management, and health monitoring
+- **🔍 Service Discovery**: Automatic discovery of services and endpoints
+- **📊 Observability**: Built-in OpenTelemetry tracing, metrics, and logging
+- **🗄️ Resource Provisioning**: Automatic database and infrastructure setup
+- **🎛️ Dashboard**: Real-time monitoring and debugging interface
+
+### Aspire Benefits for DonationBox
+
+#### Simplified Development
+- **Single Command**: Start all services with `cd src/AspireHost && dotnet run`
+- **Auto-Configuration**: Databases, connections, and dependencies configured automatically
+- **Hot Reload**: Code changes reflected immediately across all services
+
+#### Enhanced Observability
+- **Distributed Tracing**: Track requests across all microservices
+- **Real-time Metrics**: Monitor performance and health of all services
+- **Structured Logging**: Correlated logs with request tracing
+- **Service Dependencies**: Visual dependency graph and health monitoring
+
+#### Production-Ready Features
+- **Health Checks**: Built-in health monitoring for all services
+- **Resilience**: HTTP client resilience with retry policies and circuit breakers
+- **Service Discovery**: Automatic service registration and discovery
+- **Configuration**: Environment-specific configuration management
+
+### Aspire Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Aspire AppHost                           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
+│  │ AuthDb  │ │CampaignDb│ │DonationDb│ │DonorDb │             │
+│  │ (SQL)   │ │  (SQL)  │ │  (SQL)  │ │ (SQL)  │             │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
+│                                                             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│  │AuthSvc  │ │Campaign │ │Donation │ │DonorSvc │ │Payment  │ │
+│  │         │ │  Svc    │ │  Svc    │ │         │ │Svc      │ │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ │
+│                                                             │
+│  ┌─────────┐                                                 │
+│  │ApiGateway│                                                 │
+│  └─────────┘                                                 │
+└─────────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                Aspire Dashboard                             │
+│  https://localhost:15248                                    │
+│  • Service Health Monitoring                                │
+│  • Distributed Tracing                                      │
+│  • Structured Logs                                          │
+│  • Real-time Metrics                                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Getting Started
 
 ### Prerequisites
 
 - .NET 8 SDK
+- .NET Aspire workload (install with: `dotnet workload update` and `dotnet workload install aspire`)
 - SQL Server (LocalDB for development)
 - Azure Functions Core Tools v4 (for PaymentService)
 - Azure Storage Emulator or Azurite (for Durable Functions)
 - Redis (optional, for caching and distributed locking)
 - Visual Studio 2022 or VS Code
+
+### Running with .NET Aspire (Recommended)
+
+.NET Aspire provides orchestration, service discovery, and observability for the entire system. Use this method for the best development experience:
+
+#### 1. Start the Aspire AppHost
+
+```bash
+cd src/AspireHost
+dotnet run
+```
+
+This starts the Aspire dashboard at `https://localhost:15248` and orchestrates all services with:
+- ✅ **SQL Server databases** automatically provisioned
+- ✅ **Service discovery** for inter-service communication
+- ✅ **Observability** with OpenTelemetry and metrics
+- ✅ **Health monitoring** across all services
+- ✅ **Development certificates** for HTTPS
+
+#### 2. Access Services
+
+Once Aspire is running, services are available at:
+- **ApiGateway**: `https://localhost:15248` (port varies per run)
+- **AuthService**: Available via service discovery
+- **CampaignService**: Available via service discovery
+- **DonationService**: Available via service discovery
+- **DonorService**: Available via service discovery
+- **OrganizationService**: Available via service discovery
+
+#### 3. Aspire Dashboard
+
+Visit `https://localhost:15248` to:
+- Monitor all services and their health
+- View structured logs and traces
+- Access service endpoints
+- See real-time metrics
+
+### Running Individual Services (Legacy Method)
+
+If you prefer to run services individually without Aspire orchestration:
 
 ### Service Dependencies
 
@@ -487,7 +606,9 @@ curl -X POST http://localhost:7071/api/payments/process \
 
 ### Testing via ApiGateway
 
-Once all services are running, you can also test the entire system through the ApiGateway:
+Once services are running via Aspire, you can test the entire system through the ApiGateway (service discovery will automatically route to the correct endpoints):
+
+#### Testing with Aspire Service Discovery
 
 #### Gateway Health Check
 ```bash

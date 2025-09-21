@@ -10,6 +10,9 @@ The OrganizationService is a microservice responsible for managing charity organ
 - **Public Access**: Organization listing and details are publicly accessible
 - **Database**: Uses Entity Framework Core with SQL Server
 - **Clean Architecture**: Separated into Models, DTOs, Services, and Controllers
+- **Service Discovery**: Automatic discovery of AuthService via .NET Aspire
+- **Observability**: OpenTelemetry integration for organization management flows
+- **Database Provisioning**: SQL Server database `OrganizationDb` automatically created
 
 ## API Endpoints
 
@@ -26,6 +29,15 @@ The OrganizationService is a microservice responsible for managing charity organ
 - `DELETE /api/organizations/{id}` - Delete an organization (only creator can delete)
 
 ## Configuration
+
+### With .NET Aspire
+
+When running with Aspire, configuration is simplified:
+- **Database**: `OrganizationDb` (automatically provisioned)
+- **AuthService**: Discovered automatically via service discovery
+- **gRPC Client**: Configured with service discovery and resilience patterns
+
+### Standalone Configuration (Legacy)
 
 The service requires the following configuration in `appsettings.json`:
 
@@ -99,6 +111,30 @@ The service uses a SQL Server database with the following main table:
 - **List User's Organizations**: Users can only see organizations they created
 
 ## Development
+
+### Running with .NET Aspire (Recommended)
+
+The OrganizationService is integrated with .NET Aspire for simplified development:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Setup**:
+   - SQL Server database `OrganizationDb` is provisioned
+   - AuthService dependency is automatically discovered
+   - gRPC client is configured with service discovery
+   - Health monitoring is enabled
+
+3. **Development Experience**:
+   - Hot reload for code changes
+   - Real-time logs in Aspire dashboard
+   - Service health monitoring
+   - Database migrations applied automatically
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 - .NET 9.0 SDK

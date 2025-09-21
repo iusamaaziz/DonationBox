@@ -6,13 +6,15 @@ A comprehensive API Gateway implementation using YARP (Yet Another Reverse Proxy
 
 The API Gateway serves as the single entry point for all client requests to the DonationBox microservices. It provides:
 
-- **Reverse Proxy**: Routes requests to appropriate microservices
+- **Reverse Proxy**: Routes requests to appropriate microservices with YARP
+- **Service Discovery**: Automatic service discovery via .NET Aspire
 - **Load Balancing**: Distributes traffic across service instances
 - **Authentication & Authorization**: JWT token validation and forwarding
 - **CORS Support**: Cross-origin resource sharing configuration
 - **Health Checks**: Monitoring service health and availability
 - **Request Logging**: Comprehensive logging of incoming/outgoing requests
 - **Swagger Documentation**: API documentation for all services
+- **Observability**: OpenTelemetry integration for tracing and metrics
 
 ## Architecture
 
@@ -86,7 +88,13 @@ The API Gateway routes requests based on the following patterns:
 
 ## Configuration
 
-### appsettings.json
+### With .NET Aspire
+
+When running with Aspire, service discovery automatically configures routing and health checks. No manual configuration is needed - services are discovered and routed automatically.
+
+### Standalone Configuration (Legacy)
+
+For standalone operation, configure the following in `appsettings.json`:
 
 ```json
 {
@@ -131,7 +139,39 @@ The API Gateway routes requests based on the following patterns:
 }
 ```
 
+### Aspire Service Discovery
+
+With .NET Aspire, the gateway automatically:
+- Discovers all services in the AppHost
+- Configures routing based on service endpoints
+- Implements health checks and circuit breakers
+- Provides load balancing across service instances
+- Enables distributed tracing with OpenTelemetry
+
 ## Running the API Gateway
+
+### Running with .NET Aspire (Recommended)
+
+The API Gateway is integrated with .NET Aspire for service discovery and orchestration:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Access the Gateway**:
+   - The gateway will be available at a dynamic port (e.g., `https://localhost:15248`)
+   - Service discovery automatically configures routing to all services
+   - OpenTelemetry provides distributed tracing
+   - Health monitoring is built-in
+
+3. **Aspire Dashboard**:
+   - Visit the dashboard to monitor gateway and service health
+   - View real-time logs and metrics
+   - Access all service endpoints through the dashboard
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 - .NET 8.0 SDK

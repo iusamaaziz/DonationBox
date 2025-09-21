@@ -11,6 +11,8 @@ An Azure Functions-based microservice for processing donation payments with Dura
 - **🎯 Multiple Payment Gateways**: Simulated support for various payment methods (Credit Card, PayPal, Bank Transfer, etc.)
 - **🔧 Isolated Worker Runtime**: Modern Azure Functions v4 with .NET 8 isolated worker process
 - **🏥 Health Monitoring**: Built-in health checks and monitoring capabilities
+- **🔍 Observability**: OpenTelemetry integration for tracing payment flows
+- **📈 Service Discovery**: Automatic integration with .NET Aspire for monitoring
 
 ## Architecture
 
@@ -232,6 +234,30 @@ Reliable event delivery with retry logic and failure handling.
 
 ## Running the Service
 
+### Running with .NET Aspire (Recommended)
+
+The PaymentService can be integrated with .NET Aspire for enhanced monitoring and observability:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Configuration**:
+   - Azure Storage for Durable Functions is provisioned
+   - SQL Server database for payment ledger is created
+   - Redis integration is configured when available
+   - OpenTelemetry tracing is enabled for payment flows
+
+3. **Enhanced Monitoring**:
+   - Real-time logs in Aspire dashboard
+   - Service health monitoring
+   - Payment orchestration tracing
+   - Performance metrics and error rates
+
+### Running Standalone (Legacy Method)
+
 ### Prerequisites
 
 - .NET 8 SDK
@@ -448,11 +474,13 @@ func azure functionapp publish <function-app-name>
 
 - .NET 8
 - Azure Functions v4 (Isolated Worker)
+- .NET Aspire (orchestration, observability)
 - Durable Functions
 - Entity Framework Core
 - SQL Server
 - Redis (optional)
 - Azure Storage
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 
 ## Contributing

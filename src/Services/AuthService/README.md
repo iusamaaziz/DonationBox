@@ -13,6 +13,9 @@ A .NET 8 microservice for user authentication with JWT tokens and Google OAuth s
 - **SQL Server Database**: Entity Framework Core with SQL Server for data persistence
 - **Password Security**: BCrypt password hashing
 - **Health Checks**: Built-in health checks for database connectivity
+- **Service Discovery**: Automatic service discovery via .NET Aspire
+- **Observability**: OpenTelemetry integration for tracing and metrics
+- **Resilience**: HTTP client resilience with retry policies and circuit breakers
 
 ## API Endpoints
 
@@ -38,6 +41,15 @@ A .NET 8 microservice for user authentication with JWT tokens and Google OAuth s
 - `GetUserByEmail(GetUserByEmailRequest)` - Get user by email
 
 ## Configuration
+
+### With .NET Aspire
+
+When running with Aspire, the database connection string is automatically configured:
+- Database: `AuthDb` (provisioned by Aspire)
+- Connection string is injected via service discovery
+- No manual configuration needed
+
+### Standalone Configuration (Legacy)
 
 ### Environment Variables
 
@@ -82,6 +94,33 @@ Configure the following settings in `appsettings.json` or `appsettings.Developme
 ```
 
 ## Running the Service
+
+### Running with .NET Aspire (Recommended)
+
+The AuthService is integrated with .NET Aspire for database provisioning, service discovery, and observability:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Database Provisioning**:
+   - SQL Server database `AuthDb` is automatically created
+   - Database migrations are applied automatically
+   - Sample data is seeded on first run
+
+3. **Service Discovery**:
+   - Other services can discover AuthService automatically
+   - gRPC endpoints are registered with service discovery
+   - Health checks are monitored by the Aspire dashboard
+
+4. **Observability**:
+   - OpenTelemetry tracing for all requests
+   - Structured logging with correlation IDs
+   - Metrics collection for performance monitoring
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 
@@ -182,6 +221,30 @@ To enable Google OAuth:
 - **Google OAuth**: Secure integration with Google authentication
 - **Token Validation**: Comprehensive token validation for microservice communication
 
+## .NET Aspire Integration
+
+The AuthService is fully integrated with .NET Aspire for enhanced development experience:
+
+### Service Discovery
+- **Automatic Registration**: Service registers itself with Aspire service discovery
+- **gRPC Endpoints**: gRPC services are automatically discoverable by other services
+- **Health Monitoring**: Real-time health status visible in Aspire dashboard
+
+### Database Integration
+- **Automatic Provisioning**: SQL Server database `AuthDb` created automatically
+- **Migration Support**: Entity Framework migrations run automatically
+- **Sample Data**: Database seeded with sample users on first run
+
+### Observability
+- **OpenTelemetry**: Distributed tracing for authentication flows
+- **Structured Logging**: Correlation IDs for request tracking
+- **Metrics**: Performance metrics and error rates
+- **Health Checks**: Database connectivity and service responsiveness
+
+### Resilience
+- **HTTP Client Resilience**: Retry policies and circuit breakers for external calls
+- **Service Dependencies**: Automatic dependency management and startup ordering
+
 ## Architecture
 
 - **Controllers**: REST API endpoints for authentication operations
@@ -194,11 +257,14 @@ To enable Google OAuth:
 
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - JWT Bearer Authentication
 - Google OAuth
+- gRPC for inter-service communication
 - BCrypt.Net for password hashing
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI for documentation
 
 ---

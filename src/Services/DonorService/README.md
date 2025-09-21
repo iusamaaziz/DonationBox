@@ -17,6 +17,9 @@ The service follows a microservice architecture pattern with:
 - **Entity Framework Core** for data persistence
 - **REST API** for external HTTP clients
 - **SQL Server** as the database
+- **Service Discovery** via .NET Aspire for automatic AuthService discovery
+- **Observability** with OpenTelemetry for distributed tracing
+- **Database Provisioning** with SQL Server `DonorDb` automatically created
 
 ## Service Endpoints
 
@@ -39,6 +42,16 @@ The service follows a microservice architecture pattern with:
 - Connection string: Configurable in `appsettings.json`
 
 ## Configuration
+
+### With .NET Aspire
+
+When running with Aspire, configuration is simplified:
+- **Database**: `DonorDb` (automatically provisioned)
+- **AuthService**: Discovered automatically via service discovery
+- **gRPC Endpoints**: Registered automatically with service discovery
+- **Health Monitoring**: Built-in health checks visible in Aspire dashboard
+
+### Standalone Configuration (Legacy)
 
 ### appsettings.json
 ```json
@@ -126,6 +139,30 @@ rpc ValidateOrganizationAccess(ValidateOrganizationAccessRequest) returns (Valid
 - `IsActive` - Organization status
 
 ## Running the Service
+
+### Running with .NET Aspire (Recommended)
+
+The DonorService is integrated with .NET Aspire for simplified development:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Setup**:
+   - SQL Server database `DonorDb` is provisioned
+   - AuthService dependency is automatically discovered
+   - gRPC endpoints are registered with service discovery
+   - Health monitoring is enabled
+
+3. **Development Experience**:
+   - Hot reload for code changes
+   - Real-time logs in Aspire dashboard
+   - Service health monitoring
+   - Database migrations applied automatically
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 
@@ -251,9 +288,11 @@ The service implements comprehensive error handling:
 
 - .NET 8
 - ASP.NET Core Web API
+- .NET Aspire (orchestration, service discovery, observability)
 - Entity Framework Core
 - SQL Server
 - gRPC Server & Client
+- OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 - Health Checks
 

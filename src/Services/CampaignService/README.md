@@ -36,6 +36,13 @@ CampaignService follows a microservice architecture pattern with:
 - Configurable cache expiration
 - Cache invalidation on data changes
 
+### .NET Aspire Integration
+- **Service Discovery**: Automatic discovery of AuthService for authentication
+- **Database Provisioning**: SQL Server database `CampaignDb` automatically created
+- **Observability**: OpenTelemetry tracing for campaign operations
+- **Health Monitoring**: Real-time health status in Aspire dashboard
+- **Event Processing**: Reliable event consumption with resilience patterns
+
 ## API Endpoints
 
 ### Campaigns
@@ -63,6 +70,16 @@ Process Payment    Publish Event              Update Campaign Amount
 
 ## Configuration
 
+### With .NET Aspire
+
+When running with Aspire, configuration is simplified:
+- **Database**: `CampaignDb` (automatically provisioned)
+- **AuthService**: Discovered automatically via service discovery
+- **Redis**: Configured via Aspire resources (optional)
+- **Service Discovery**: HTTP client configured with resilience patterns
+
+### Standalone Configuration (Legacy)
+
 ### Environment Variables
 - `UseRedis`: Enable/disable Redis caching (default: false)
 - `AuthService:Url`: URL for AuthService gRPC endpoint
@@ -85,6 +102,30 @@ Process Payment    Publish Event              Update Campaign Amount
 - `GET /info` - Service information and configuration
 
 ## Development
+
+### Running with .NET Aspire (Recommended)
+
+The CampaignService is integrated with .NET Aspire for simplified development:
+
+1. **Start the Aspire AppHost**:
+   ```bash
+   cd src/AspireHost
+   dotnet run
+   ```
+
+2. **Automatic Setup**:
+   - SQL Server database `CampaignDb` is provisioned
+   - AuthService dependency is automatically discovered
+   - Redis caching is configured if available
+   - OpenTelemetry tracing is enabled
+
+3. **Development Experience**:
+   - Hot reload for code changes
+   - Real-time logs in Aspire dashboard
+   - Service health monitoring
+   - Database migrations applied automatically
+
+### Running Standalone (Legacy Method)
 
 ### Prerequisites
 - .NET 8.0 SDK
@@ -126,6 +167,14 @@ ENTRYPOINT ["dotnet", "CampaignService.dll"]
 
 ## Monitoring
 
+### With .NET Aspire
+- **Structured logging** with correlation IDs via OpenTelemetry
+- **Health checks** for all dependencies (database, AuthService, Redis)
+- **Performance metrics** collected automatically via OpenTelemetry
+- **Distributed tracing** for campaign operations and event processing
+- **Real-time dashboard** showing service health and metrics
+
+### Standalone Monitoring (Legacy)
 - Structured logging with Serilog
 - Health checks for dependencies
 - Performance metrics via built-in ASP.NET Core metrics

@@ -1,10 +1,72 @@
 # DonationBox - Microservices System
 
-A comprehensive microservices-based donation management system built with .NET 8, ASP.NET Core Web API, Azure Functions, and YARP API Gateway.
+A comprehensive microservices-based donation management system built with .NET 8, ASP.NET Core Web API, .NET Aspire, Azure Functions, and YARP API Gateway.
 
 ## System Overview
 
-DonationBox is designed as a scalable microservices architecture that allows organizations to manage donation campaigns, process donations, and track progress efficiently. The system consists of six core services working together to provide a complete donation management solution.
+DonationBox is designed as a scalable microservices architecture that allows organizations to manage donation campaigns, process donations, and track progress efficiently. The system  is fully integrated with **.NET Aspire** for enhanced development experience, orchestration, and observability. It consists of six core services working together to provide a complete donation management solution.
+
+## .NET Aspire Integration
+
+### What is .NET Aspire?
+
+.NET Aspire is a cloud-ready stack for building observable, production-ready apps with distributed services. It provides:
+
+- **🚀 Service Orchestration**: Automatic startup, dependency management, and health monitoring
+- **🔍 Service Discovery**: Automatic discovery of services and endpoints
+- **📊 Observability**: Built-in OpenTelemetry tracing, metrics, and logging
+- **🗄️ Resource Provisioning**: Automatic database and infrastructure setup
+- **🎛️ Dashboard**: Real-time monitoring and debugging interface
+
+### Aspire Benefits for DonationBox
+
+#### Simplified Development
+- **Single Command**: Start all services with `cd src/AspireHost && dotnet run`
+- **Auto-Configuration**: Databases, connections, and dependencies configured automatically
+- **Hot Reload**: Code changes reflected immediately across all services
+
+#### Enhanced Observability
+- **Distributed Tracing**: Track requests across all microservices
+- **Real-time Metrics**: Monitor performance and health of all services
+- **Structured Logging**: Correlated logs with request tracing
+- **Service Dependencies**: Visual dependency graph and health monitoring
+
+#### Production-Ready Features
+- **Health Checks**: Built-in health monitoring for all services
+- **Resilience**: HTTP client resilience with retry policies and circuit breakers
+- **Service Discovery**: Automatic service registration and discovery
+- **Configuration**: Environment-specific configuration management
+
+### Aspire Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Aspire AppHost                           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
+│  │ AuthDb  │ │CampaignDb│ │DonationDb│ │DonorDb │             │
+│  │ (SQL)   │ │  (SQL)  │ │  (SQL)  │ │ (SQL)  │             │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
+│                                                             │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│  │AuthSvc  │ │Campaign │ │Donation │ │DonorSvc │ │Payment  │ │
+│  │         │ │  Svc    │ │  Svc    │ │         │ │Svc      │ │
+│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ │
+│                                                             │
+│  ┌─────────┐                                                 │
+│  │ApiGateway│                                                 │
+│  └─────────┘                                                 │
+└─────────────────────────────────────────────────────────────┘
+         │
+         ▼
+┌─────────────────────────────────────────────────────────────┐
+│                Aspire Dashboard                             │
+│  https://localhost:15248                                    │
+│  • Service Health Monitoring                                │
+│  • Distributed Tracing                                      │
+│  • Structured Logs                                          │
+│  • Real-time Metrics                                        │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## Services
 
@@ -302,70 +364,6 @@ DonationBox/
 - **Documentation**: Swagger/OpenAPI
 - **Observability**: OpenTelemetry, structured logging, metrics
 - **Service Discovery**: Aspire service discovery for inter-service communication
-
-## .NET Aspire Integration
-
-This project is fully integrated with **.NET Aspire** for enhanced development experience, orchestration, and observability.
-
-### What is .NET Aspire?
-
-.NET Aspire is a cloud-ready stack for building observable, production-ready apps with distributed services. It provides:
-
-- **🚀 Service Orchestration**: Automatic startup, dependency management, and health monitoring
-- **🔍 Service Discovery**: Automatic discovery of services and endpoints
-- **📊 Observability**: Built-in OpenTelemetry tracing, metrics, and logging
-- **🗄️ Resource Provisioning**: Automatic database and infrastructure setup
-- **🎛️ Dashboard**: Real-time monitoring and debugging interface
-
-### Aspire Benefits for DonationBox
-
-#### Simplified Development
-- **Single Command**: Start all services with `cd src/AspireHost && dotnet run`
-- **Auto-Configuration**: Databases, connections, and dependencies configured automatically
-- **Hot Reload**: Code changes reflected immediately across all services
-
-#### Enhanced Observability
-- **Distributed Tracing**: Track requests across all microservices
-- **Real-time Metrics**: Monitor performance and health of all services
-- **Structured Logging**: Correlated logs with request tracing
-- **Service Dependencies**: Visual dependency graph and health monitoring
-
-#### Production-Ready Features
-- **Health Checks**: Built-in health monitoring for all services
-- **Resilience**: HTTP client resilience with retry policies and circuit breakers
-- **Service Discovery**: Automatic service registration and discovery
-- **Configuration**: Environment-specific configuration management
-
-### Aspire Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Aspire AppHost                           │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐             │
-│  │ AuthDb  │ │CampaignDb│ │DonationDb│ │DonorDb │             │
-│  │ (SQL)   │ │  (SQL)  │ │  (SQL)  │ │ (SQL)  │             │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘             │
-│                                                             │
-│  ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ │
-│  │AuthSvc  │ │Campaign │ │Donation │ │DonorSvc │ │Payment  │ │
-│  │         │ │  Svc    │ │  Svc    │ │         │ │Svc      │ │
-│  └─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘ │
-│                                                             │
-│  ┌─────────┐                                                 │
-│  │ApiGateway│                                                 │
-│  └─────────┘                                                 │
-└─────────────────────────────────────────────────────────────┘
-         │
-         ▼
-┌─────────────────────────────────────────────────────────────┐
-│                Aspire Dashboard                             │
-│  https://localhost:15248                                    │
-│  • Service Health Monitoring                                │
-│  • Distributed Tracing                                      │
-│  • Structured Logs                                          │
-│  • Real-time Metrics                                        │
-└─────────────────────────────────────────────────────────────┘
-```
 
 ## Getting Started
 

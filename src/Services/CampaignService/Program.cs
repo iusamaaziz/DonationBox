@@ -34,7 +34,7 @@ if (useRedis)
         builder.Services.AddStackExchangeRedisCache(options =>
         {
             options.Configuration = redisConnectionString;
-            options.InstanceName = "CampaignService";
+            options.InstanceName = "CampaignServiceImpl";
         });
 
         Console.WriteLine($"Redis caching enabled with connection: {redisConnectionString}");
@@ -54,9 +54,9 @@ builder.Services.AddLogging(logging =>
 });
 
 // Register application services
-builder.Services.AddScoped<ICampaignService, CampaignService>();
+builder.Services.AddScoped<ICampaignService, CampaignServiceImpl>();
 builder.Services.AddSingleton<IEventConsumer, EventConsumer>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<IEventConsumer>());
+builder.Services.AddHostedService<EventConsumer>();
 
 // Register authentication services (gRPC)
 builder.Services.AddScoped<IAuthValidationService, GrpcAuthValidationService>();
@@ -154,7 +154,7 @@ app.MapHealthChecks("/health");
 // Add a simple info endpoint
 app.MapGet("/info", () => new
 {
-    Service = "CampaignService",
+    Service = "CampaignServiceImpl",
     Version = "1.0.0",
     Environment = app.Environment.EnvironmentName,
     UseRedis = useRedis,

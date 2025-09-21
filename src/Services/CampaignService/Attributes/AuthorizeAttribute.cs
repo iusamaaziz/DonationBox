@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using CampaignService.Services;
 
+namespace CampaignService.Attributes;
+
 /// <summary>
 /// Custom authorization attribute that validates JWT tokens with AuthService
 /// </summary>

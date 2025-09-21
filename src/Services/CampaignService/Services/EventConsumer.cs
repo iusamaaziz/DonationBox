@@ -4,18 +4,18 @@ namespace CampaignService.Services;
 
 public class EventConsumer : IEventConsumer, IHostedService
 {
-    private readonly ICampaignService _campaignService;
+    private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<EventConsumer> _logger;
     private readonly IConfiguration _configuration;
     private CancellationTokenSource? _cancellationTokenSource;
     private Task? _consumerTask;
 
     public EventConsumer(
-        ICampaignService campaignService,
+        IServiceProvider serviceProvider,
         ILogger<EventConsumer> logger,
         IConfiguration configuration)
     {
-        _campaignService = campaignService;
+        _serviceProvider = serviceProvider;
         _logger = logger;
         _configuration = configuration;
     }
@@ -88,8 +88,14 @@ public class EventConsumer : IEventConsumer, IHostedService
             _logger.LogInformation("Processing donation payment completed event for campaign {CampaignId}, donation {DonationId}, amount {Amount}",
                 eventData.CampaignId, eventData.DonationId, eventData.Amount);
 
-            // Update campaign amount
-            await _campaignService.UpdateCampaignAmountAsync(eventData.CampaignId, eventData.Amount);
+            // Create a scope to resolve the scoped ICampaignService
+            using (var scope = _serviceProvider.CreateScope())
+            {
+                var campaignService = scope.ServiceProvider.GetRequiredService<ICampaignService>();
+
+                // Update campaign amount
+                await campaignService.UpdateCampaignAmountAsync(eventData.CampaignId, eventData.Amount);
+            }
 
             _logger.LogInformation("Successfully processed donation payment event for campaign {CampaignId}",
                 eventData.CampaignId);

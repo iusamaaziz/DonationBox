@@ -35,9 +35,6 @@ public class Donation
     public DateTime CreatedAt { get; set; }
     
     public DateTime? ProcessedAt { get; set; }
-    
-    // Navigation properties
-    public DonationCampaign Campaign { get; set; } = null!;
 }
 
 public enum PaymentStatus

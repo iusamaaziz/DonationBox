@@ -10,34 +10,22 @@ public class DonationServiceImpl : IDonationService
 {
     private readonly DonationDbContext _context;
     private readonly IEventPublisher _eventPublisher;
-    private readonly ICampaignService _campaignService;
     private readonly ILogger<DonationServiceImpl> _logger;
 
     public DonationServiceImpl(
         DonationDbContext context,
         IEventPublisher eventPublisher,
-        ICampaignService campaignService,
         ILogger<DonationServiceImpl> logger)
     {
         _context = context;
         _eventPublisher = eventPublisher;
-        _campaignService = campaignService;
         _logger = logger;
     }
 
     public async Task<Donation> CreateDonationAsync(CreateDonationRequest request)
     {
-        // Validate campaign exists and is active
-        var campaign = await _context.Campaigns.FindAsync(request.CampaignId);
-        if (campaign == null)
-        {
-            throw new ArgumentException($"Campaign with ID {request.CampaignId} not found");
-        }
-
-        if (!campaign.IsActive)
-        {
-            throw new InvalidOperationException($"Campaign '{campaign.Title}' is not currently accepting donations");
-        }
+        // Note: Campaign validation should be done by CampaignService
+        // For now, we'll assume the campaign ID is valid
 
         // Create donation
         var donation = new Donation
@@ -57,7 +45,7 @@ public class DonationServiceImpl : IDonationService
         await _context.SaveChangesAsync();
 
         // Publish donation pledged event
-        await PublishDonationPledgedEventAsync(donation, campaign);
+        await PublishDonationPledgedEventAsync(donation);
 
         _logger.LogInformation("Created donation {DonationId} for campaign {CampaignId} with amount {Amount}",
             donation.Id, request.CampaignId, request.Amount);
@@ -67,9 +55,7 @@ public class DonationServiceImpl : IDonationService
 
     public async Task<bool> ProcessDonationAsync(int donationId, string transactionId, PaymentStatus status)
     {
-        var donation = await _context.Donations
-            .Include(d => d.Campaign)
-            .FirstOrDefaultAsync(d => d.Id == donationId);
+        var donation = await _context.Donations.FindAsync(donationId);
 
         if (donation == null)
         {
@@ -80,17 +66,13 @@ public class DonationServiceImpl : IDonationService
         // Update donation status
         donation.PaymentStatus = status;
         donation.TransactionId = transactionId;
-        
+
         if (status == PaymentStatus.Completed)
         {
             donation.ProcessedAt = DateTime.UtcNow;
-            
-            // Update campaign current amount
-            donation.Campaign.CurrentAmount += donation.Amount;
-            donation.Campaign.UpdatedAt = DateTime.UtcNow;
 
-            // Refresh campaign stats cache
-            await _campaignService.RefreshCampaignStatsAsync(donation.CampaignId);
+            // Publish donation payment completed event for eventual consistency
+            await PublishDonationPaymentCompletedEventAsync(donation);
         }
 
         await _context.SaveChangesAsync();
@@ -102,7 +84,6 @@ public class DonationServiceImpl : IDonationService
     public async Task<IEnumerable<Donation>> GetDonationsByCampaignAsync(int campaignId)
     {
         return await _context.Donations
-            .Include(d => d.Campaign)
             .Where(d => d.CampaignId == campaignId)
             .OrderByDescending(d => d.CreatedAt)
             .ToListAsync();
@@ -110,19 +91,16 @@ public class DonationServiceImpl : IDonationService
 
     public async Task<Donation?> GetDonationByIdAsync(int id)
     {
-        return await _context.Donations
-            .Include(d => d.Campaign)
-            .FirstOrDefaultAsync(d => d.Id == id);
+        return await _context.Donations.FindAsync(id);
     }
 
     public async Task<Donation?> GetDonationByTransactionIdAsync(string transactionId)
     {
         return await _context.Donations
-            .Include(d => d.Campaign)
             .FirstOrDefaultAsync(d => d.TransactionId == transactionId);
     }
 
-    private async Task PublishDonationPledgedEventAsync(Donation donation, DonationCampaign campaign)
+    private async Task PublishDonationPledgedEventAsync(Donation donation)
     {
         var donationEvent = new DonationPledgedEvent
         {
@@ -135,14 +113,31 @@ public class DonationServiceImpl : IDonationService
             IsAnonymous = donation.IsAnonymous,
             TransactionId = donation.TransactionId,
             CreatedAt = donation.CreatedAt,
-            CampaignTitle = campaign.Title,
-            CampaignGoal = campaign.Goal,
-            CampaignCurrentAmount = campaign.CurrentAmount,
-            CampaignProgressPercentage = campaign.ProgressPercentage
+            // Campaign details would need to be fetched from CampaignService if needed
+            CampaignTitle = "Campaign details available via CampaignService",
+            CampaignGoal = 0,
+            CampaignCurrentAmount = 0,
+            CampaignProgressPercentage = 0
         };
 
         await _eventPublisher.PublishAsync(donationEvent);
         _logger.LogInformation("Published DonationPledgedEvent for donation {DonationId}", donation.Id);
+    }
+
+    private async Task PublishDonationPaymentCompletedEventAsync(Donation donation)
+    {
+        var paymentEvent = new DonationPaymentCompletedEvent
+        {
+            DonationId = donation.Id,
+            CampaignId = donation.CampaignId,
+            Amount = donation.Amount,
+            TransactionId = donation.TransactionId,
+            PaymentCompletedAt = donation.ProcessedAt ?? DateTime.UtcNow,
+            DonorEmail = donation.DonorEmail
+        };
+
+        await _eventPublisher.PublishAsync(paymentEvent);
+        _logger.LogInformation("Published DonationPaymentCompletedEvent for donation {DonationId}", donation.Id);
     }
 
     private static string GenerateTransactionId()

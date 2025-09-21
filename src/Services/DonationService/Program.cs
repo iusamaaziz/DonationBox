@@ -55,7 +55,6 @@ builder.Services.AddLogging(logging =>
 });
 
 // Register application services
-builder.Services.AddScoped<ICampaignService, CampaignService>();
 builder.Services.AddScoped<IDonationService, DonationServiceImpl>();
 builder.Services.AddScoped<IEventPublisher, EventPublisher>();
 
@@ -74,7 +73,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "Donation Service API",
         Version = "v1",
-        Description = "A microservice for managing donation campaigns and donations with JWT authentication",
+        Description = "A microservice for managing donations with JWT authentication",
         Contact = new OpenApiContact
         {
             Name = "DonationBox Team",

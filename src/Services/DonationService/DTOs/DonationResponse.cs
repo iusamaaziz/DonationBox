@@ -16,8 +16,8 @@ public class DonationResponse
     public DateTime CreatedAt { get; set; }
     public DateTime? ProcessedAt { get; set; }
     
-    // Campaign summary (avoid full navigation property)
-    public CampaignSummary Campaign { get; set; } = new();
+    // Campaign summary (fetched from CampaignService when needed)
+    public CampaignSummary? Campaign { get; set; }
 }
 
 public class CampaignSummary
@@ -26,5 +26,4 @@ public class CampaignSummary
     public string Title { get; set; } = string.Empty;
     public decimal Goal { get; set; }
     public decimal CurrentAmount { get; set; }
-    public CampaignStatus Status { get; set; }
 }

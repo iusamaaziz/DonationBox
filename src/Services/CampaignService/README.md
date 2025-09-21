@@ -153,17 +153,6 @@ dotnet test
 dotnet test --filter Category=Integration
 ```
 
-## Deployment
-
-CampaignService is designed to run as a containerized microservice:
-
-```dockerfile
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-COPY . /app
-WORKDIR /app
-EXPOSE 80
-ENTRYPOINT ["dotnet", "CampaignService.dll"]
-```
 
 ## Monitoring
 

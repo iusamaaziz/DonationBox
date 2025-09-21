@@ -20,7 +20,7 @@ public class GrpcAuthValidationService : IAuthValidationService
         _configuration = configuration;
         _logger = logger;
         
-        var authServiceUrl = _configuration["AuthService:GrpcUrl"] ?? "https://localhost:7002";
+        var authServiceUrl = _configuration.GetSection("services:authService:https:0").Value!;
         _channel = GrpcChannel.ForAddress(authServiceUrl);
         _client = new AuthenticationService.AuthenticationServiceClient(_channel);
     }

@@ -267,11 +267,7 @@ The AuthService is fully integrated with .NET Aspire for enhanced development ex
 - OpenTelemetry for distributed tracing
 - Swagger/OpenAPI for documentation
 
----
 
-## Docker (with HTTPS Dev Cert)
-
-This service includes a Dockerfile and development compose to run with HTTPS inside the container using the ASP.NET Core development certificate.
 
 ### 1) Export the dev certificate (one-time)
 ```powershell

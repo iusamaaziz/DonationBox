@@ -1,25 +1,25 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
 using System.Text.Json;
-using DonationService.Data;
-using DonationService.DTOs;
-using DonationService.Models;
+using CampaignService.Data;
+using CampaignService.DTOs;
+using CampaignService.Models;
 
-namespace DonationService.Services;
+namespace CampaignService.Services;
 
-public class CampaignService : ICampaignService
+public class CampaignServiceImpl : ICampaignService
 {
-    private readonly DonationDbContext _context;
+    private readonly CampaignDbContext _context;
     private readonly IDistributedCache? _cache;
     private readonly IConfiguration _configuration;
-    private readonly ILogger<CampaignService> _logger;
+    private readonly ILogger<CampaignServiceImpl> _logger;
     private readonly bool _useRedis;
     private readonly TimeSpan _cacheExpiration = TimeSpan.FromMinutes(15);
 
-    public CampaignService(
-        DonationDbContext context,
+    public CampaignServiceImpl(
+        CampaignDbContext context,
         IConfiguration configuration,
-        ILogger<CampaignService> logger,
+        ILogger<CampaignServiceImpl> logger,
         IDistributedCache? cache = null)
     {
         _context = context;
@@ -32,7 +32,6 @@ public class CampaignService : ICampaignService
     public async Task<IEnumerable<CampaignResponse>> GetAllCampaignsAsync()
     {
         var campaigns = await _context.Campaigns
-            .Include(c => c.Donations)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
 
@@ -42,7 +41,7 @@ public class CampaignService : ICampaignService
     public async Task<IEnumerable<CampaignResponse>> GetActiveCampaignsAsync()
     {
         const string cacheKey = "active_campaigns";
-        
+
         if (_useRedis && _cache != null)
         {
             try
@@ -63,9 +62,8 @@ public class CampaignService : ICampaignService
         }
 
         var activeCampaigns = await _context.Campaigns
-            .Include(c => c.Donations)
-            .Where(c => c.Status == CampaignStatus.Active && 
-                       DateTime.UtcNow >= c.StartDate && 
+            .Where(c => c.Status == CampaignStatus.Active &&
+                       DateTime.UtcNow >= c.StartDate &&
                        DateTime.UtcNow <= c.EndDate)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
@@ -97,17 +95,14 @@ public class CampaignService : ICampaignService
 
     public async Task<CampaignResponse?> GetCampaignByIdAsync(int id)
     {
-        var campaign = await _context.Campaigns
-            .Include(c => c.Donations)
-            .FirstOrDefaultAsync(c => c.Id == id);
-
+        var campaign = await _context.Campaigns.FindAsync(id);
         return campaign != null ? MapToResponse(campaign) : null;
     }
 
     public async Task<CampaignStatsResponse?> GetCampaignStatsAsync(int id)
     {
         var cacheKey = $"campaign_stats_{id}";
-        
+
         if (_useRedis && _cache != null)
         {
             try
@@ -127,9 +122,7 @@ public class CampaignService : ICampaignService
             }
         }
 
-        var campaign = await _context.Campaigns
-            .Include(c => c.Donations.Where(d => d.PaymentStatus == PaymentStatus.Completed))
-            .FirstOrDefaultAsync(c => c.Id == id);
+        var campaign = await _context.Campaigns.FindAsync(id);
 
         if (campaign == null)
             return null;
@@ -141,7 +134,7 @@ public class CampaignService : ICampaignService
             Goal = campaign.Goal,
             CurrentAmount = campaign.CurrentAmount,
             ProgressPercentage = campaign.ProgressPercentage,
-            TotalDonations = campaign.Donations.Count,
+            TotalDonations = 0, // We'll calculate this from donation events
             IsGoalReached = campaign.IsGoalReached,
             TimeRemaining = campaign.TimeRemaining,
             LastUpdated = DateTime.UtcNow
@@ -204,19 +197,19 @@ public class CampaignService : ICampaignService
         // Update only provided fields
         if (!string.IsNullOrEmpty(request.Title))
             campaign.Title = request.Title;
-        
+
         if (!string.IsNullOrEmpty(request.Description))
             campaign.Description = request.Description;
-        
+
         if (request.Goal.HasValue)
             campaign.Goal = request.Goal.Value;
-        
+
         if (request.StartDate.HasValue)
             campaign.StartDate = request.StartDate.Value;
-        
+
         if (request.EndDate.HasValue)
             campaign.EndDate = request.EndDate.Value;
-        
+
         if (request.Status.HasValue)
             campaign.Status = request.Status.Value;
 
@@ -270,23 +263,8 @@ public class CampaignService : ICampaignService
 
     public async Task RefreshCampaignStatsAsync(int campaignId)
     {
-        var campaign = await _context.Campaigns
-            .Include(c => c.Donations.Where(d => d.PaymentStatus == PaymentStatus.Completed))
-            .FirstOrDefaultAsync(c => c.Id == campaignId);
-
-        if (campaign == null)
-            return;
-
-        // Recalculate current amount from completed donations
-        campaign.CurrentAmount = campaign.Donations
-            .Where(d => d.PaymentStatus == PaymentStatus.Completed)
-            .Sum(d => d.Amount);
-
-        campaign.UpdatedAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-
-        // Invalidate related caches
+        // This method would be called when we receive donation events
+        // For now, we'll just invalidate the cache
         await InvalidateActiveCampaignsCache();
         await InvalidateCampaignStatsCache(campaignId);
 
@@ -296,12 +274,33 @@ public class CampaignService : ICampaignService
     public async Task<IEnumerable<CampaignResponse>> GetCampaignsByCreatorAsync(string createdBy)
     {
         var campaigns = await _context.Campaigns
-            .Include(c => c.Donations)
             .Where(c => c.CreatedBy == createdBy)
             .OrderByDescending(c => c.CreatedAt)
             .ToListAsync();
 
         return campaigns.Select(MapToResponse);
+    }
+
+    public async Task UpdateCampaignAmountAsync(int campaignId, decimal amount)
+    {
+        var campaign = await _context.Campaigns.FindAsync(campaignId);
+        if (campaign == null)
+        {
+            _logger.LogWarning("Campaign {CampaignId} not found when updating amount", campaignId);
+            return;
+        }
+
+        campaign.CurrentAmount += amount;
+        campaign.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        // Invalidate related caches
+        await InvalidateActiveCampaignsCache();
+        await InvalidateCampaignStatsCache(campaignId);
+
+        _logger.LogInformation("Updated campaign {CampaignId} amount by {Amount}, new total: {Total}",
+            campaignId, amount, campaign.CurrentAmount);
     }
 
     private static CampaignResponse MapToResponse(DonationCampaign campaign)
@@ -324,7 +323,7 @@ public class CampaignService : ICampaignService
             IsExpired = campaign.IsExpired,
             IsGoalReached = campaign.IsGoalReached,
             TimeRemaining = campaign.TimeRemaining,
-            TotalDonations = campaign.Donations?.Count(d => d.PaymentStatus == PaymentStatus.Completed) ?? 0
+            TotalDonations = 0 // We'll track this via events
         };
     }
 

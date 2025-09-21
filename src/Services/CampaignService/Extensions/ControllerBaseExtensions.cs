@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
+namespace CampaignService.Extensions;
+
 /// <summary>
 /// Extensions for ControllerBase to easily access authenticated user information
 /// </summary>

@@ -125,26 +125,6 @@ public class DonationsController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get all donations for a specific campaign
-    /// </summary>
-    /// <param name="campaignId">Campaign ID</param>
-    /// <returns>List of donations for the campaign</returns>
-    [HttpGet("campaign/{campaignId:int}")]
-    public async Task<ActionResult<IEnumerable<DonationResponse>>> GetDonationsByCampaign(int campaignId)
-    {
-        try
-        {
-            var donations = await _donationService.GetDonationsByCampaignAsync(campaignId);
-            var responses = donations.Select(MapToResponse);
-            return Ok(responses);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error retrieving donations for campaign {CampaignId}", campaignId);
-            return StatusCode(500, "An error occurred while retrieving donations");
-        }
-    }
 
     /// <summary>
     /// Process a donation payment (webhook endpoint for payment processors)
@@ -192,14 +172,8 @@ public class DonationsController : ControllerBase
             PaymentStatus = donation.PaymentStatus,
             CreatedAt = donation.CreatedAt,
             ProcessedAt = donation.ProcessedAt,
-            Campaign = new CampaignSummary
-            {
-                Id = donation.Campaign.Id,
-                Title = donation.Campaign.Title,
-                Goal = donation.Campaign.Goal,
-                CurrentAmount = donation.Campaign.CurrentAmount,
-                Status = donation.Campaign.Status
-            }
+            // Campaign details should be fetched from CampaignService when needed
+            Campaign = null
         };
     }
 }

@@ -1,9 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
 using CampaignService.DTOs;
 using CampaignService.Models;
 using CampaignService.Services;
 using CampaignService.Attributes;
 using CampaignService.Extensions;
+
+using Microsoft.AspNetCore.Mvc;
 
 namespace CampaignService.Controllers;
 

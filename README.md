@@ -143,7 +143,6 @@ A .NET 8 ASP.NET Core Web API service for user authentication with JWT tokens an
 - OpenTelemetry for distributed tracing
 - Swagger/OpenAPI
 
-> For Docker usage with HTTPS dev certs, see `src/Services/AuthService/README.md` (section "Docker (with HTTPS Dev Cert)").
 
 ### 2. CampaignService
 
@@ -479,7 +478,6 @@ dotnet run
 - **Swagger UI**: `https://localhost:7002` or `http://localhost:5002`
 - **gRPC Endpoint**: `http://localhost:5001` (for inter-service communication)
 
-> To run AuthService in Docker with HTTPS, follow the guide in `src/Services/AuthService/README.md`.
 
 #### 2. Start DonorService
 
@@ -810,7 +808,6 @@ Future development will focus on enhancing the system with additional capabiliti
 - **Progressive Web App**: PWA for offline functionality
 
 ### 5. **Infrastructure & DevOps**
-- **Docker Containerization**: Multi-stage Docker builds for all services
 - **Kubernetes Orchestration**: K8s manifests for production deployment
 - **CI/CD Pipelines**: GitHub Actions or Azure DevOps pipelines
 - **Monitoring & Observability**: Application Insights, Prometheus, Grafana

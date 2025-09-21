@@ -11,66 +11,19 @@ public static class DbInitializer
         {
             // Ensure database is created
             await context.Database.EnsureCreatedAsync();
-            
+
             // Check if database has been seeded
-            if (await context.Campaigns.AnyAsync())
+            if (await context.Donations.AnyAsync())
             {
                 return; // Database has been seeded
             }
 
-            // Seed sample data
-            var sampleCampaigns = new List<DonationCampaign>
-            {
-                new DonationCampaign
-                {
-                    Title = "Help Build a Community Center",
-                    Description = "We are raising funds to build a new community center that will serve local families with educational programs, recreational activities, and social services.",
-                    Goal = 50000m,
-                    CurrentAmount = 15000m,
-                    StartDate = DateTime.UtcNow.AddDays(-30),
-                    EndDate = DateTime.UtcNow.AddDays(60),
-                    Status = CampaignStatus.Active,
-                    CreatedBy = "community-admin",
-                    CreatedAt = DateTime.UtcNow.AddDays(-30),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-1)
-                },
-                new DonationCampaign
-                {
-                    Title = "Emergency Relief Fund",
-                    Description = "Supporting families affected by recent natural disasters with emergency supplies, temporary housing, and essential services.",
-                    Goal = 25000m,
-                    CurrentAmount = 8500m,
-                    StartDate = DateTime.UtcNow.AddDays(-15),
-                    EndDate = DateTime.UtcNow.AddDays(45),
-                    Status = CampaignStatus.Active,
-                    CreatedBy = "relief-coordinator",
-                    CreatedAt = DateTime.UtcNow.AddDays(-15),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-2)
-                },
-                new DonationCampaign
-                {
-                    Title = "School Technology Upgrade",
-                    Description = "Upgrading classroom technology and providing tablets for students to enhance digital learning opportunities.",
-                    Goal = 75000m,
-                    CurrentAmount = 75000m,
-                    StartDate = DateTime.UtcNow.AddDays(-90),
-                    EndDate = DateTime.UtcNow.AddDays(-10),
-                    Status = CampaignStatus.Completed,
-                    CreatedBy = "school-principal",
-                    CreatedAt = DateTime.UtcNow.AddDays(-90),
-                    UpdatedAt = DateTime.UtcNow.AddDays(-10)
-                }
-            };
-
-            await context.Campaigns.AddRangeAsync(sampleCampaigns);
-            await context.SaveChangesAsync();
-
-            // Add sample donations
+            // Add sample donations (campaign validation should be done by CampaignService)
             var sampleDonations = new List<Donation>
             {
                 new Donation
                 {
-                    CampaignId = 1,
+                    CampaignId = 1, // Assuming campaign with ID 1 exists in CampaignService
                     Amount = 500m,
                     DonorName = "John Smith",
                     DonorEmail = "john.smith@email.com",
@@ -83,7 +36,7 @@ public static class DbInitializer
                 },
                 new Donation
                 {
-                    CampaignId = 1,
+                    CampaignId = 1, // Assuming campaign with ID 1 exists in CampaignService
                     Amount = 1000m,
                     DonorName = "Anonymous Donor",
                     DonorEmail = "donor@email.com",
@@ -96,7 +49,7 @@ public static class DbInitializer
                 },
                 new Donation
                 {
-                    CampaignId = 2,
+                    CampaignId = 2, // Assuming campaign with ID 2 exists in CampaignService
                     Amount = 250m,
                     DonorName = "Sarah Johnson",
                     DonorEmail = "sarah.j@email.com",

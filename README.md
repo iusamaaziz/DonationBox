@@ -6,6 +6,44 @@ A comprehensive microservices-based donation management system built with .NET 8
 
 DonationBox is designed as a scalable microservices architecture that allows organizations to manage donation campaigns, process donations, and track progress efficiently. The system  is fully integrated with **.NET Aspire** for enhanced development experience, orchestration, and observability. It consists of six core services working together to provide a complete donation management solution.
 
+## Technology Stack
+
+The DonationBox system leverages a comprehensive modern technology stack designed for scalability, reliability, and developer productivity:
+
+### Core Framework
+- **.NET 8** - Latest LTS framework with performance improvements and new features
+- **ASP.NET Core Web API** - High-performance web framework for REST APIs
+- **C#** - Modern, type-safe programming language
+
+### Microservices Orchestration
+- **.NET Aspire** - Cloud-ready stack for building observable, production-ready applications
+- **Service Discovery** - Automatic service registration and discovery
+- **Distributed Tracing** - End-to-end request tracing across services
+- **Health Monitoring** - Real-time service health and dependency tracking
+
+### Data & Storage
+- **SQL Server** - Relational database for data persistence
+- **Entity Framework Core** - Modern ORM with LINQ support
+- **Redis** - Optional caching layer for improved performance
+- **Azure Storage** - Durable storage for serverless functions
+
+### Communication & Integration
+- **REST APIs** - HTTP-based service communication
+- **gRPC** - High-performance RPC for inter-service communication
+- **YARP API Gateway** - Reverse proxy for routing and cross-cutting concerns
+- **JWT Authentication** - Secure token-based authentication with refresh tokens
+
+### Serverless & Event Processing
+- **Azure Functions v4** - Serverless compute with isolated worker runtime
+- **Durable Functions** - State management for long-running workflows
+- **Event-Driven Architecture** - Loose coupling through asynchronous events
+
+### Development & Operations
+- **OpenTelemetry** - Observability framework for metrics, logs, and traces
+- **Swagger/OpenAPI** - API documentation and testing
+- **Health Checks** - Built-in service health monitoring
+- **Structured Logging** - Correlated logging across services
+
 ## .NET Aspire Integration
 
 ### What is .NET Aspire?

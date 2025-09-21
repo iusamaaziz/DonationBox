@@ -3,22 +3,26 @@
   <Sdk Name="Aspire.AppHost.Sdk" Version="9.3.1" />
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net9.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <UserSecretsId>b571cf38-f517-43e4-bc21-d5e9b5e47e76</UserSecretsId>
+	<OutputType>Exe</OutputType>
+	<TargetFramework>net9.0</TargetFramework>
+	<ImplicitUsings>enable</ImplicitUsings>
+	<Nullable>enable</Nullable>
+	<UserSecretsId>b571cf38-f517-43e4-bc21-d5e9b5e47e76</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting" Version="9.4.2" />
-    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.4.2" />
-    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.4.2" />
-    <PackageReference Include="KubernetesClient" Version="17.0.14" />
+	<PackageReference Include="Aspire.Hosting" Version="9.4.2" />
+	<PackageReference Include="Aspire.Hosting.AppHost" Version="9.4.2" />
+	<PackageReference Include="Aspire.Hosting.SqlServer" Version="9.4.2" />
+	<PackageReference Include="Aspire.Hosting.Yarp" Version="9.4.2-preview.1.25428.12" />
+	<PackageReference Include="KubernetesClient" Version="17.0.14" />
 
-    <!-- Reference to Service projects -->
+	<!-- Reference to Service projects -->
 	  <ProjectReference Include="..\Services\AuthService\AuthService.csproj" />
 	  <ProjectReference Include="..\Services\OrganizationService\OrganizationService.csproj" />
+	  <ProjectReference Include="..\Services\DonationService\DonationService.csproj" />
+	  <ProjectReference Include="..\Services\CampaignService\CampaignService.csproj" />
+	  <ProjectReference Include="..\ApiGateway\ApiGateway\ApiGateway.csproj" />
   </ItemGroup>
 
 </Project>

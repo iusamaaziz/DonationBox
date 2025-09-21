@@ -1,9 +1,12 @@
+using System.Text;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
-using Yarp.ReverseProxy.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add service defaults & Aspire components
+builder.AddServiceDefaults();
 
 // Add services to the container
 builder.Services.AddEndpointsApiExplorer();
@@ -24,7 +27,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // Configure YARP Reverse Proxy
 builder.Services.AddReverseProxy()
-    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+    .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"))
+    .AddServiceDiscoveryDestinationResolver();
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -80,8 +84,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configure Health Checks
-builder.Services.AddHealthChecks();
+// Configure Health Checks (additional to service defaults)
+builder.Services.AddHealthChecks()
+    .AddCheck("gateway", () => Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy("API Gateway is running"));
 
 // Configure Logging
 builder.Logging.AddConsole();
@@ -101,7 +106,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI(c =>
     {
         c.SwaggerEndpoint("/swagger/v1/swagger.json", "DonationBox API Gateway v1");
-        c.RoutePrefix = "swagger";
+        c.RoutePrefix = string.Empty;
     });
 }
 
@@ -128,14 +133,18 @@ app.Use(async (context, next) =>
 // Map YARP Reverse Proxy
 app.MapReverseProxy();
 
-// Add health check endpoint
-app.MapHealthChecks("/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+// Map default endpoints (health checks, etc.)
+app.MapDefaultEndpoints();
+
+// Add custom health check endpoint with different path to avoid conflicts
+app.MapHealthChecks("/gateway/health", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
 {
     ResponseWriter = async (context, report) =>
     {
         context.Response.ContentType = "application/json";
         var result = new
         {
+            service = "ApiGateway",
             status = report.Status.ToString(),
             checks = report.Entries.Select(e => new
             {
@@ -161,10 +170,10 @@ app.MapGet("/gateway/info", () => new
     Timestamp = DateTime.UtcNow,
     Services = new[]
     {
-        new { Name = "AuthService", Url = "https://localhost:7002" },
-        //new { Name = "DonationService", Url = "http://localhost:5131" },
-        //new { Name = "DonorService", Url = "http://localhost:5069" },
-        //new { Name = "PaymentService", Url = "http://localhost:5296" }
+        new { Name = "AuthService", Url =  "https://authservice" },
+        new { Name = "OrganizationService", Url = "https://organizationservice" },
+        new { Name = "CampaignService", Url = "https://campaignservice" },
+        new { Name = "DonationService", Url = "https://donationservice" }
     }
 })
 .WithName("GetGatewayInfo")
